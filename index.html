@@ -2,144 +2,209 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tools Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Tools Hub - Personal Productivity Platform</title>
   <link rel="stylesheet" href="/assets/css/global.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-config.js"></script>
   <style>
-    /* Google Standard Brand Login Button */
-    .google-signin-btn {
-      display: inline-flex;
+    body {
+      background: #fbfbfd;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    /* Top Navigation Bar */
+    .landing-nav {
+      max-width: 1024px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      background: #ffffff;
-      color: #374151;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      padding: 7px 14px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+    .brand-logo {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #0f172a;
       text-decoration: none;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      transition: background 0.15s ease, border-color 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .google-signin-btn:hover {
-      background: #f9fafb;
-      border-color: #9ca3af;
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      background: #2563eb;
+      border-radius: 50%;
     }
-    .google-signin-btn svg {
-      width: 18px;
-      height: 18px;
-    }
-    .user-avatar-badge {
+
+    .nav-login-btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      padding: 5px 12px;
-      border-radius: 20px;
-      text-decoration: none;
-      font-size: 0.85rem;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 0.88rem;
       font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+    .nav-login-btn:hover {
+      background: #1e293b;
+    }
+
+    /* Hero Section */
+    .hero-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 1.5rem 5rem;
+      max-width: 720px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      color: #2563eb;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.04em;
+      margin-bottom: 1.25rem;
       color: #0f172a;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.12rem);
+      line-height: 1.6;
+      color: #64748b;
+      margin-bottom: 2.25rem;
+      max-width: 540px;
+    }
+
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #2563eb;
+      color: #ffffff;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .cta-button:active {
+      transform: scale(0.98);
+    }
+
+    /* Minimal Feature Cards */
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      width: 100%;
+      margin-top: 3.5rem;
+      text-align: left;
+    }
+    @media (min-width: 640px) {
+      .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .feat-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .feat-card h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .feat-card p {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
 
-  <main class="container">
-    <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
-      <div>
-        <h1 style="font-size: 1.5rem; letter-spacing: -0.02em;">Public Tools</h1>
-        <p style="color:var(--text-muted); font-size:0.88rem; margin-top:2px;">Fast, lightweight web utilities</p>
+  <nav class="landing-nav">
+    <a href="/" class="brand-logo">
+      <div class="brand-dot"></div>
+      Tools Hub
+    </a>
+    <a href="/user" class="nav-login-btn" id="navBtn">Login →</a>
+  </nav>
+
+  <main class="hero-container">
+    <div class="pill-badge">Next-Gen Micro-Tool Workspace</div>
+    <h1 class="hero-title">Aapke sabhi custom web tools, ek jagah.</h1>
+    <p class="hero-sub">Single-file HTML, WebAssembly aur P2P utilities ko bina kisi hassle ke run aur pin karein. Secure, private aur ultra-fast.</p>
+    
+    <a href="/user" class="cta-button" id="ctaBtn">
+      Start Using Tools →
+    </a>
+
+    <div class="features-grid">
+      <div class="feat-card">
+        <h4>⚡ Ultra Fast</h4>
+        <p>Client-side sandboxed architecture bina kisi server delay ke instant chalta hai.</p>
       </div>
-
-      <div id="headerAuthSlot">
-        <!-- Logged Out State: Clean Google Sign-in -->
-        <button id="googleLoginBtn" class="google-signin-btn" onclick="signInUser()">
-          <svg viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
-            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.02 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-          </svg>
-          Login
-        </button>
-
-        <!-- Logged In State: User Pill Link to Portal -->
-        <a id="userPortalLink" href="/user" class="user-avatar-badge" style="display:none;">
-          <span>👤 My Tools</span>
-        </a>
+      <div class="feat-card">
+        <h4>🔒 Safe Sandbox</h4>
+        <p>Aapke tools securely isolated iframe me run hote hain.</p>
       </div>
-    </header>
-
-    <div class="tool-grid" id="toolGrid">
-      <div style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.95rem;">
-        Tools load ho rahe hain...
+      <div class="feat-card">
+        <h4>📌 Custom Pinning</h4>
+        <p>Apne daily most-used top 3 tools ko home dashboard par pin karke rakhein.</p>
       </div>
     </div>
   </main>
 
   <script>
-    async function checkAuthStatus() {
+    // Agar user pehle se logged in hai toh button text adjust karein
+    async function checkSession() {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
-        document.getElementById('googleLoginBtn').style.display = 'none';
-        document.getElementById('userPortalLink').style.display = 'inline-flex';
-      } else {
-        document.getElementById('googleLoginBtn').style.display = 'inline-flex';
-        document.getElementById('userPortalLink').style.display = 'none';
+        document.getElementById('navBtn').innerText = 'My Tools →';
+        document.getElementById('ctaBtn').innerText = 'Go to My Tools →';
       }
     }
-
-    async function signInUser() {
-      await sb.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin + '/user' }
-      });
-    }
-
-    async function loadPublicTools() {
-      const grid = document.getElementById('toolGrid');
-      
-      const cached = localStorage.getItem('my_cached_tools');
-      if (cached) {
-        renderCards(JSON.parse(cached));
-      }
-
-      const { data: tools, error } = await sb
-        .from('tools')
-        .select('*')
-        .eq('is_public', true)
-        .order('is_pinned', { ascending: false })
-        .order('sort_order', { ascending: true });
-
-      if (!error && tools && tools.length > 0) {
-        localStorage.setItem('my_cached_tools', JSON.stringify(tools));
-        renderCards(tools);
-      } else if (!cached) {
-        grid.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 2rem 0;">Filhal koi public tool live nahi hai.</p>';
-      }
-    }
-
-    function renderCards(tools) {
-      const grid = document.getElementById('toolGrid');
-      grid.innerHTML = tools.map(tool => `
-        <a href="/tool/${encodeURIComponent(tool.slug)}" class="tool-card">
-          <div class="tool-info">
-            <h3>${tool.title}</h3>
-            <p>${tool.description || ''}</p>
-          </div>
-          <span class="badge">${tool.badge || 'Tool'}</span>
-        </a>
-      `).join('');
-    }
-
-    checkAuthStatus();
-    loadPublicTools();
+    checkSession();
   </script>
 </body>
 </html>
