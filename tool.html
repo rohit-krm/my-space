@@ -30,63 +30,25 @@
       z-index: 100;
     }
 
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
+    .nav-left { display: flex; align-items: center; gap: 12px; }
     .home-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      color: #2563eb;
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: #eff6ff;
+      display: inline-flex; align-items: center; gap: 5px; color: #2563eb;
+      text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 3px 8px;
+      border-radius: 6px; background: #eff6ff;
     }
-    .home-link:active { background: #dbeafe; }
+    .tool-page-title { font-size: 0.85rem; font-weight: 600; color: #0f172a; }
+    .tool-badge-pill { font-size: 0.72rem; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 12px; }
 
-    .tool-page-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #0f172a;
+    .frame-container { flex: 1; width: 100%; height: calc(100% - 38px); position: relative; }
+    iframe { width: 100%; height: 100%; border: none; display: block; }
+    
+    .center-state {
+      display: flex; flex-direction: column; height: 100%; width: 100%;
+      align-items: center; justify-content: center; padding: 20px; text-align: center;
     }
-
-    .tool-badge-pill {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: #64748b;
-      background: #f1f5f9;
-      padding: 2px 8px;
-      border-radius: 12px;
-    }
-
-    .frame-container {
-      flex: 1;
-      width: 100%;
-      height: calc(100% - 38px);
-      position: relative;
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-
-    .loader {
-      display: flex;
-      height: 100%;
-      width: 100%;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-      font-size: 0.95rem;
+    .btn-login {
+      margin-top: 14px; background: #2563eb; color: #fff; padding: 9px 18px;
+      border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none;
     }
   </style>
 </head>
@@ -95,69 +57,132 @@
   <header class="top-nav-bar">
     <div class="nav-left">
       <a href="/" class="home-link"><span>←</span> Home</a>
-      <span class="tool-page-title" id="barTitle">Loading...</span>
+      <span class="tool-page-title" id="barTitle">Loading Tool...</span>
     </div>
     <span class="tool-badge-pill" id="barBadge">App</span>
   </header>
 
   <main class="frame-container">
-    <div id="loading" class="loader">टूल शुरू हो रहा है...</div>
+    <div id="loaderSlot" class="center-state">
+      <p style="color:#64748b; font-size:0.95rem;">Tool load ho raha hai...</p>
+    </div>
+
+    <!-- Login Required Gatekeeper -->
+    <div id="authGateSlot" class="center-state" style="display:none;">
+      <h3 style="font-size:1.15rem; color:#0f172a; margin-bottom:6px;">Login Required</h3>
+      <p style="font-size:0.85rem; color:#64748b; max-width:320px;">Is shared tool ko access karne aur apne account me save karne ke liye Google se sign in karein.</p>
+      <button class="btn-login" onclick="loginToAccess()">Sign in with Google</button>
+    </div>
+
+    <!-- Permission Denied Gatekeeper -->
+    <div id="deniedSlot" class="center-state" style="display:none;">
+      <div style="font-size:2rem; margin-bottom:8px;">🔒</div>
+      <h3 style="font-size:1.15rem; color:#ef4444; margin-bottom:6px;">Access Denied</h3>
+      <p style="font-size:0.85rem; color:#64748b; max-width:340px;">You don't have necessary permission for this tool. Creator ne is tool ka public access revoke kar diya hai.</p>
+      <a href="/user" class="btn-login" style="background:#0f172a;">Go to Workspace</a>
+    </div>
+
     <iframe id="toolFrame" style="display:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-modals"></iframe>
   </main>
 
   <script>
-    async function initTool() {
-      // 1. Slug extract karein
-      const pathParts = window.location.pathname.split('/').filter(Boolean);
-      let slug = '';
-      if (pathParts.length >= 2 && pathParts[0] === 'tool') {
-        slug = decodeURIComponent(pathParts[1]);
-      } else {
-        const params = new URLSearchParams(window.location.search);
-        slug = params.get('id');
-      }
+    let targetSlug = '';
 
-      if (!slug) {
-        document.getElementById('loading').innerText = 'कोई टूल सेलेक्ट नहीं किया गया।';
+    function getSlug() {
+      const parts = window.location.pathname.split('/').filter(Boolean);
+      if (parts.length >= 2 && parts[0] === 'tool') return decodeURIComponent(parts[1]);
+      return new URLSearchParams(window.location.search).get('id') || '';
+    }
+
+    async function loginToAccess() {
+      await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.href }
+      });
+    }
+
+    async function init() {
+      targetSlug = getSlug();
+      if (!targetSlug) {
+        showError('Koi tool slug provide nahi kiya gaya.');
         return;
       }
 
-      // 2. Database se hamesha fresh tool data fetch karein
+      const { data: { session } } = await sb.auth.getSession();
+      const currentUser = session ? session.user : null;
+
+      // 1. Tool metadata fetch
       const { data: tool, error } = await sb
         .from('tools')
         .select('*')
-        .eq('slug', slug)
+        .eq('slug', targetSlug)
         .single();
 
       if (error || !tool) {
-        document.getElementById('loading').innerText = 'टूल नहीं मिला या अनपब्लिश्ड है।';
+        // Agar database se record nahi milta aur user logged out hai to authentication maangein
+        if (!currentUser) {
+          document.getElementById('loaderSlot').style.display = 'none';
+          document.getElementById('authGateSlot').style.display = 'flex';
+          return;
+        }
+        document.getElementById('loaderSlot').style.display = 'none';
+        document.getElementById('deniedSlot').style.display = 'flex';
         return;
       }
 
+      // 2. Permission Check
+      const isOwner = currentUser && (tool.user_id === currentUser.id);
+      const isFeatured = tool.is_featured_home && tool.approval_status === 'approved';
+
+      // Agar tool featured nahi hai aur user owner nahi hai
+      if (!isOwner && !isFeatured) {
+        // Logged out user ko login screen dikhayein
+        if (!currentUser) {
+          document.getElementById('loaderSlot').style.display = 'none';
+          document.getElementById('authGateSlot').style.display = 'flex';
+          return;
+        }
+        // Agar link sharing band hai to access deny karein
+        if (!tool.is_link_shared) {
+          document.getElementById('loaderSlot').style.display = 'none';
+          document.getElementById('deniedSlot').style.display = 'flex';
+          return;
+        }
+      }
+
+      // 3. Auto-save tool to user's shelf if opened via shared link
+      if (currentUser && !isOwner && tool.is_link_shared) {
+        sb.from('user_saved_tools').insert([{
+          tool_id: tool.id,
+          user_id: currentUser.id
+        }]).then(() => {}).catch(() => {});
+      }
+
+      // 4. Mount Tool
       document.title = tool.title;
       document.getElementById('barTitle').innerText = tool.title;
-      document.getElementById('barBadge').innerText = tool.badge || 'Tool';
+      document.getElementById('barBadge').innerText = (tool.tool_type || 'App').toUpperCase();
 
       const frame = document.getElementById('toolFrame');
-      
       try {
         const res = await fetch(tool.file_url);
-        if (!res.ok) {
-          throw new Error('Storage file fetch failed');
-        }
-        const htmlText = await res.text();
-        frame.srcdoc = htmlText;
+        if (!res.ok) throw new Error('File fetch error');
+        frame.srcdoc = await res.text();
         frame.style.display = 'block';
-        document.getElementById('loading').style.display = 'none';
+        document.getElementById('loaderSlot').style.display = 'none';
 
-        // Background me view count increment (non-blocking)
-        sb.rpc('increment_tool_view', { tool_slug: slug }).catch(() => {});
-      } catch (err) {
-        document.getElementById('loading').innerText = 'फाइल लोड करने में समस्या हुई। कृपया दोबारा अपलोड करें।';
+        // Increment count
+        sb.rpc('increment_tool_view', { tool_slug: targetSlug }).catch(() => {});
+      } catch (e) {
+        showError('Tool file load nahi ho saki.');
       }
     }
 
-    initTool();
+    function showError(msg) {
+      document.getElementById('loaderSlot').innerHTML = `<p style="color:#ef4444; font-size:0.9rem;">${msg}</p>`;
+    }
+
+    init();
   </script>
 </body>
 </html>
