@@ -14,39 +14,86 @@
       display: flex; height: 100vh; align-items: center; justify-content: center;
       font-family: sans-serif; color: #64748b; font-size: 1rem;
     }
+    /* Floating Home Button */
+    .home-floating-btn {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 99999;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      opacity: 0.65;
+      transition: opacity 0.2s ease, transform 0.15s ease;
+    }
+    .home-floating-btn:hover, .home-floating-btn:active {
+      opacity: 1;
+      transform: scale(1.03);
+    }
   </style>
 </head>
 <body>
+
+  <a href="/" class="home-floating-btn" title="Dashboard par wapas jayein">
+    <span>🏠</span> Home
+  </a>
 
   <div id="loading" class="loader">टूल शुरू हो रहा है...</div>
   <iframe id="toolFrame" style="display:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-modals"></iframe>
 
   <script>
     async function initTool() {
-      const params = new URLSearchParams(window.location.search);
-      const slug = params.get('id');
+      // Dono tarike support honge: /tool/quick-beam ya /tool?id=quick-beam
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      let slug = '';
+      if (pathParts.length >= 2 && pathParts[0] === 'tool') {
+        slug = pathParts[1];
+      } else {
+        const params = new URLSearchParams(window.location.search);
+        slug = params.get('id');
+      }
 
       if (!slug) {
         document.getElementById('loading').innerText = 'कोई टूल सेलेक्ट नहीं किया गया।';
         return;
       }
 
-      const { data: tool, error } = await sb
-        .from('tools')
-        .select('*')
-        .eq('slug', slug)
-        .single();
+      // Check LocalStorage cache first for ultra-fast instant render
+      const cachedTools = JSON.parse(localStorage.getItem('my_cached_tools') || '[]');
+      const cached = cachedTools.find(t => t.slug === slug);
 
-      if (error || !tool) {
-        document.getElementById('loading').innerText = 'टूल नहीं मिला या अनपब्लिश्ड है।';
-        return;
+      let fileUrl = cached ? cached.file_url : null;
+      let title = cached ? cached.title : 'Tool';
+
+      if (!fileUrl) {
+        const { data: tool, error } = await sb
+          .from('tools')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+
+        if (error || !tool) {
+          document.getElementById('loading').innerText = 'टूल नहीं मिला या अनपब्लिश्ड है।';
+          return;
+        }
+        fileUrl = tool.file_url;
+        title = tool.title;
       }
 
-      document.title = tool.title;
+      document.title = title;
       const frame = document.getElementById('toolFrame');
       
-      // फाइल फेच करके सीधे आईफ्रेम में इंजेक्ट
-      const res = await fetch(tool.file_url);
+      const res = await fetch(fileUrl);
       const htmlText = await res.text();
 
       frame.srcdoc = htmlText;
