@@ -18,7 +18,6 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    /* Ultra-Thin Header (Content Safe) */
     .top-nav-bar {
       height: 38px;
       min-height: 38px;
@@ -48,11 +47,8 @@
       padding: 4px 8px;
       border-radius: 6px;
       background: #eff6ff;
-      transition: background 0.15s;
     }
-    .home-link:active {
-      background: #dbeafe;
-    }
+    .home-link:active { background: #dbeafe; }
 
     .tool-page-title {
       font-size: 0.85rem;
@@ -69,7 +65,6 @@
       border-radius: 12px;
     }
 
-    /* Fullscreen Tool Canvas */
     .frame-container {
       flex: 1;
       width: 100%;
@@ -97,18 +92,14 @@
 </head>
 <body>
 
-  <!-- Clean Top Bar -->
   <header class="top-nav-bar">
     <div class="nav-left">
-      <a href="/" class="home-link">
-        <span>←</span> Home
-      </a>
+      <a href="/" class="home-link"><span>←</span> Home</a>
       <span class="tool-page-title" id="barTitle">Loading...</span>
     </div>
     <span class="tool-badge-pill" id="barBadge">App</span>
   </header>
 
-  <!-- Tool Iframe Section -->
   <main class="frame-container">
     <div id="loading" class="loader">टूल शुरू हो रहा है...</div>
     <iframe id="toolFrame" style="display:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-modals"></iframe>
@@ -116,7 +107,7 @@
 
   <script>
     async function initTool() {
-      // 1. Slug nikalna: chahe /tool/quick-beam ho ya /tool?id=quick-beam
+      // 1. Slug extract karein
       const pathParts = window.location.pathname.split('/').filter(Boolean);
       let slug = '';
       if (pathParts.length >= 2 && pathParts[0] === 'tool') {
@@ -131,43 +122,39 @@
         return;
       }
 
-      // 2. Instant Local Cache Check (Zero Latency)
-      const cachedList = JSON.parse(localStorage.getItem('my_cached_tools') || '[]');
-      const cached = cachedList.find(t => t.slug === slug);
+      // 2. Database se hamesha fresh tool data fetch karein
+      const { data: tool, error } = await sb
+        .from('tools')
+        .select('*')
+        .eq('slug', slug)
+        .single();
 
-      let fileUrl = cached ? cached.file_url : null;
-      let title = cached ? cached.title : slug;
-      let badge = cached ? cached.badge : 'Tool';
-
-      if (!fileUrl) {
-        const { data: tool, error } = await sb
-          .from('tools')
-          .select('*')
-          .eq('slug', slug)
-          .single();
-
-        if (error || !tool) {
-          document.getElementById('loading').innerText = 'टूल नहीं मिला या अनपब्लिश्ड है।';
-          return;
-        }
-        fileUrl = tool.file_url;
-        title = tool.title;
-        badge = tool.badge || 'Tool';
+      if (error || !tool) {
+        document.getElementById('loading').innerText = 'टूल नहीं मिला या अनपब्लिश्ड है।';
+        return;
       }
 
-      // Top bar updates
-      document.title = title;
-      document.getElementById('barTitle').innerText = title;
-      document.getElementById('barBadge').innerText = badge;
+      document.title = tool.title;
+      document.getElementById('barTitle').innerText = tool.title;
+      document.getElementById('barBadge').innerText = tool.badge || 'Tool';
 
-      // Tool inject inside iframe
       const frame = document.getElementById('toolFrame');
-      const res = await fetch(fileUrl);
-      const htmlText = await res.text();
+      
+      try {
+        const res = await fetch(tool.file_url);
+        if (!res.ok) {
+          throw new Error('Storage file fetch failed');
+        }
+        const htmlText = await res.text();
+        frame.srcdoc = htmlText;
+        frame.style.display = 'block';
+        document.getElementById('loading').style.display = 'none';
 
-      frame.srcdoc = htmlText;
-      frame.style.display = 'block';
-      document.getElementById('loading').style.display = 'none';
+        // Background me view count increment (non-blocking)
+        sb.rpc('increment_tool_view', { tool_slug: slug }).catch(() => {});
+      } catch (err) {
+        document.getElementById('loading').innerText = 'फाइल लोड करने में समस्या हुई। कृपया दोबारा अपलोड करें।';
+      }
     }
 
     initTool();
