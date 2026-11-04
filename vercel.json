@@ -3,7 +3,7 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/tool/:slug*", "destination": "/tool" },
-    { "source": "/user", "destination": "/user.html" },
-    { "source": "/admin", "destination": "/admin.html" }
+    { "source": "/user", "destination": "/user" },
+    { "source": "/admin", "destination": "/admin" }
   ]
 }
