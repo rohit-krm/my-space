@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Tool — ToolsHub</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/js/supabase-config.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], mono: ['"JetBrains Mono"', 'monospace'] } }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased">
+
+  <!-- Header -->
+  <header class="w-full max-w-3xl mx-auto px-5 py-5 flex items-center justify-between">
+    <a href="/user" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-xs">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      <span>Back to Workspace</span>
+    </a>
+    <span class="text-xs font-mono text-slate-400">Step 1 of 1</span>
+  </header>
+
+  <!-- Upload Card -->
+  <main class="flex-1 max-w-xl w-full mx-auto px-4 py-8 flex flex-col justify-center">
+    
+    <div id="formCard" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+      <div class="mb-6">
+        <h1 class="text-xl font-extrabold text-slate-900">Upload & Deploy New Tool</h1>
+        <p class="text-xs text-slate-500 mt-1">ChatGPT ya Claude ka single-file HTML code yahan deploy karein</p>
+      </div>
+
+      <form id="uploadForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Tool Title</label>
+          <input type="text" id="tTitle" required placeholder="e.g. Code Compiler for AI" class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Slug (Unique URL)</label>
+          <div class="flex items-center border border-slate-200 rounded-xl px-3 bg-slate-50 focus-within:border-blue-600 focus-within:bg-white">
+            <span class="text-xs font-mono text-slate-400">rohmry.vercel.app/tool/</span>
+            <input type="text" id="tSlug" required placeholder="code-compiler-for-ai" class="w-full text-xs p-3 bg-transparent outline-none font-mono">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Description</label>
+          <input type="text" id="tDesc" placeholder="Pack GitHub ZIPs or Folders into structured AI context" class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Format</label>
+            <select id="tType" class="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white outline-none">
+              <option value="app" selected>🖥️ Full App Suite</option>
+              <option value="widget">⚡ Mini Widget</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">HTML File</label>
+            <input type="file" id="tFile" accept=".html" required class="w-full text-xs p-2 border border-slate-200 rounded-xl bg-white file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="w-full mt-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 transition-all">
+          <span>Upload & Make Live</span>
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        </button>
+      </form>
+    </div>
+
+    <!-- Success State Card (Hidden by Default) -->
+    <div id="successCard" class="hidden bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-lg">
+      <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+        ✓
+      </div>
+      <h2 class="text-xl font-extrabold text-slate-900">Tool Deployed Successfully!</h2>
+      <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">Aapka naya HTML tool sandboxed architecture par live ho gaya hai.</p>
+      
+      <div class="my-6 p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-blue-600 truncate" id="deployedLink">
+        rohmry.vercel.app/tool/...
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2 justify-center">
+        <a id="launchDirectBtn" href="#" target="_blank" class="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 flex items-center justify-center gap-2">
+          <span>Open Fullscreen Tool</span>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </a>
+        <a id="backDashBtn" href="/user" class="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 flex items-center justify-center gap-2">
+          <span>Go to Workspace</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+    let currentUser = null;
+
+    async function checkAuth() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        window.location.href = '/user';
+        return;
+      }
+      currentUser = session.user;
+    }
+    checkAuth();
+
+    // Auto-generate slug from title
+    document.getElementById('tTitle').addEventListener('input', (e) => {
+      const s = document.getElementById('tSlug');
+      if (!s.dataset.touched) {
+        s.value = e.target.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      }
+    });
+    document.getElementById('tSlug').addEventListener('focus', function() { this.dataset.touched = 'true'; });
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('tTitle').value.trim();
+      const slug = document.getElementById('tSlug').value.trim().toLowerCase();
+      const desc = document.getElementById('tDesc').value.trim();
+      const type = document.getElementById('tType').value;
+      const file = document.getElementById('tFile').files[0];
+
+      if (!title || !slug || !file) return;
+
+      const btn = document.getElementById('submitBtn');
+      btn.innerHTML = `<span class="inline-block animate-spin mr-2">⚙️</span> Deploying to Sandbox...`;
+      btn.disabled = true;
+
+      try {
+        // 1. Version Check & Purani file clean-up rule (Max 3 versions)
+        const { data: existingTool } = await sb.from('tools').select('id').eq('slug', slug).maybeSingle();
+
+        const timestamp = Date.now();
+        const storagePath = `${currentUser.id}/${slug}-${timestamp}.html`;
+
+        // 2. Upload to Storage
+        const { error: upErr } = await sb.storage.from('tools-vault').upload(storagePath, file, { contentType: 'text/html' });
+        if (upErr) throw upErr;
+
+        const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(storagePath);
+
+        let finalToolId;
+
+        if (existingTool) {
+          // New version for existing tool
+          finalToolId = existingTool.id;
+          
+          // Get all existing versions
+          const { data: versions } = await sb.from('tool_versions')
+            .select('*')
+            .eq('tool_id', finalToolId)
+            .order('version_number', { ascending: true });
+
+          // If already 3 or more versions, delete oldest from storage & table
+          if (versions && versions.length >= 3) {
+            const oldest = versions[0];
+            await sb.storage.from('tools-vault').remove([oldest.storage_path]);
+            await sb.from('tool_versions').delete().eq('id', oldest.id);
+          }
+
+          const nextVerNumber = (versions && versions.length > 0) ? (versions[versions.length - 1].version_number + 1) : 2;
+
+          // Insert new version
+          await sb.from('tool_versions').insert([{
+            tool_id: finalToolId,
+            version_number: nextVerNumber,
+            file_url: publicUrl,
+            storage_path: storagePath
+          }]);
+
+          // Update main tool pointer
+          await sb.from('tools').update({
+            title,
+            description: desc,
+            tool_type: type,
+            file_url: publicUrl,
+            storage_path: storagePath,
+            last_accessed_at: new Date().toISOString()
+          }).eq('id', finalToolId);
+
+        } else {
+          // Fresh Tool Insert
+          const { data: newTool, error: insErr } = await sb.from('tools').insert([{
+            user_id: currentUser.id,
+            title,
+            slug,
+            description: desc,
+            tool_type: type,
+            file_url: publicUrl,
+            storage_path: storagePath,
+            is_link_shared: false,
+            is_featured_home: false,
+            last_accessed_at: new Date().toISOString()
+          }]).select().single();
+
+          if (insErr) throw insErr;
+          finalToolId = newTool.id;
+
+          // Add as Version 1
+          await sb.from('tool_versions').insert([{
+            tool_id: finalToolId,
+            version_number: 1,
+            file_url: publicUrl,
+            storage_path: storagePath
+          }]);
+        }
+
+        // Trigger Confetti Celebration
+        confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+
+        // Show Success Card
+        document.getElementById('formCard').classList.add('hidden');
+        const successCard = document.getElementById('successCard');
+        successCard.classList.remove('hidden');
+
+        const toolUrl = `${window.location.origin}/tool/${slug}`;
+        document.getElementById('deployedLink').innerText = toolUrl;
+        document.getElementById('launchDirectBtn').href = `/tool/${slug}`;
+        document.getElementById('backDashBtn').href = `/user?highlight=${slug}`;
+
+      } catch (err) {
+        alert("Upload error: " + err.message);
+        btn.innerHTML = `<span>Upload & Make Live</span>`;
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
