@@ -59,20 +59,50 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Description</label>
-          <input type="text" id="tDesc" placeholder="Pack GitHub ZIPs or Folders into structured AI context" class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none">
+          <input type="text" id="tDesc" placeholder="Short description about tool utility" class="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none">
+        </div>
+
+        <!-- Dynamic Icon & Theme Selector -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Choose Icon</label>
+            <select id="tIcon" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none">
+              <option value="calculator">🧮 Calculator</option>
+              <option value="sparkles">✨ Sparkles / AI</option>
+              <option value="qr-code">🏁 QR Code</option>
+              <option value="zap" selected>⚡ Zap / Lightning</option>
+              <option value="code">💻 Code / Dev</option>
+              <option value="terminal">📟 Terminal</option>
+              <option value="file-text">📄 Document / Text</option>
+              <option value="cpu">⚙️ CPU / Utility</option>
+              <option value="wrench">🔧 General Tool</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Icon Accent Color</label>
+            <select id="tThemeColor" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none">
+              <option value="blue" selected>🔵 Blue</option>
+              <option value="indigo">🟣 Indigo / Purple</option>
+              <option value="emerald">🟢 Emerald / Green</option>
+              <option value="amber">🟠 Amber / Orange</option>
+              <option value="rose">🔴 Rose / Red</option>
+              <option value="slate">⚫ Dark Slate</option>
+            </select>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Format</label>
-            <select id="tType" class="w-full text-xs p-3 rounded-xl border border-slate-200 bg-white outline-none">
+            <select id="tType" class="w-full text-xs p-2.5 rounded-xl border border-slate-200 bg-white outline-none">
               <option value="app" selected>🖥️ Full App Suite</option>
               <option value="widget">⚡ Mini Widget</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">HTML File</label>
-            <input type="file" id="tFile" accept=".html" required class="w-full text-xs p-2 border border-slate-200 rounded-xl bg-white file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+            <input type="file" id="tFile" accept=".html" required class="w-full text-xs p-1.5 border border-slate-200 rounded-xl bg-white file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
           </div>
         </div>
 
@@ -83,7 +113,7 @@
       </form>
     </div>
 
-    <!-- Success State Card (Hidden by Default) -->
+    <!-- Success State Card -->
     <div id="successCard" class="hidden bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-lg">
       <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
         ✓
@@ -123,7 +153,6 @@
     }
     checkAuth();
 
-    // Auto-generate slug from title
     document.getElementById('tTitle').addEventListener('input', (e) => {
       const s = document.getElementById('tSlug');
       if (!s.dataset.touched) {
@@ -138,6 +167,8 @@
       const slug = document.getElementById('tSlug').value.trim().toLowerCase();
       const desc = document.getElementById('tDesc').value.trim();
       const type = document.getElementById('tType').value;
+      const icon = document.getElementById('tIcon').value;
+      const themeColor = document.getElementById('tThemeColor').value;
       const file = document.getElementById('tFile').files[0];
 
       if (!title || !slug || !file) return;
@@ -147,31 +178,25 @@
       btn.disabled = true;
 
       try {
-        // 1. Version Check & Purani file clean-up rule (Max 3 versions)
         const { data: existingTool } = await sb.from('tools').select('id').eq('slug', slug).maybeSingle();
 
         const timestamp = Date.now();
         const storagePath = `${currentUser.id}/${slug}-${timestamp}.html`;
 
-        // 2. Upload to Storage
         const { error: upErr } = await sb.storage.from('tools-vault').upload(storagePath, file, { contentType: 'text/html' });
         if (upErr) throw upErr;
 
         const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(storagePath);
-
         let finalToolId;
 
         if (existingTool) {
-          // New version for existing tool
           finalToolId = existingTool.id;
           
-          // Get all existing versions
           const { data: versions } = await sb.from('tool_versions')
             .select('*')
             .eq('tool_id', finalToolId)
             .order('version_number', { ascending: true });
 
-          // If already 3 or more versions, delete oldest from storage & table
           if (versions && versions.length >= 3) {
             const oldest = versions[0];
             await sb.storage.from('tools-vault').remove([oldest.storage_path]);
@@ -180,7 +205,6 @@
 
           const nextVerNumber = (versions && versions.length > 0) ? (versions[versions.length - 1].version_number + 1) : 2;
 
-          // Insert new version
           await sb.from('tool_versions').insert([{
             tool_id: finalToolId,
             version_number: nextVerNumber,
@@ -188,24 +212,26 @@
             storage_path: storagePath
           }]);
 
-          // Update main tool pointer
           await sb.from('tools').update({
             title,
             description: desc,
             tool_type: type,
+            icon,
+            theme_color: themeColor,
             file_url: publicUrl,
             storage_path: storagePath,
             last_accessed_at: new Date().toISOString()
           }).eq('id', finalToolId);
 
         } else {
-          // Fresh Tool Insert
           const { data: newTool, error: insErr } = await sb.from('tools').insert([{
             user_id: currentUser.id,
             title,
             slug,
             description: desc,
             tool_type: type,
+            icon,
+            theme_color: themeColor,
             file_url: publicUrl,
             storage_path: storagePath,
             is_link_shared: false,
@@ -216,7 +242,6 @@
           if (insErr) throw insErr;
           finalToolId = newTool.id;
 
-          // Add as Version 1
           await sb.from('tool_versions').insert([{
             tool_id: finalToolId,
             version_number: 1,
@@ -225,13 +250,10 @@
           }]);
         }
 
-        // Trigger Confetti Celebration
         confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
 
-        // Show Success Card
         document.getElementById('formCard').classList.add('hidden');
-        const successCard = document.getElementById('successCard');
-        successCard.classList.remove('hidden');
+        document.getElementById('successCard').classList.remove('hidden');
 
         const toolUrl = `${window.location.origin}/tool/${slug}`;
         document.getElementById('deployedLink').innerText = toolUrl;
