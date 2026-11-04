@@ -3,66 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Personal Workspace</title>
+  <title>Personal Tools & Workspace</title>
   <link rel="stylesheet" href="/assets/css/global.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-config.js"></script>
   <style>
-    .loading-shimmer {
-      padding: 2rem;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.95rem;
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .user-btn {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-light);
+      text-decoration: none;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid #bfdbfe;
+      transition: background 0.15s ease;
+    }
+    .user-btn:active {
+      background: #dbeafe;
     }
   </style>
 </head>
 <body>
 
   <main class="container">
-    <header style="display:flex; justify-content:space-between; align-items:flex-start;">
+    <header style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 2rem;">
       <div>
-        <h1>Personal Tools</h1>
-        <p>सुपरफास्ट इंटरनल प्रोडक्टिविटी टूल्स</p>
+        <h1>Public Tools</h1>
+        <p>Instant productivity utilities</p>
       </div>
-      <a href="/admin" style="font-size:0.85rem; color:var(--text-muted); text-decoration:none; padding:0.4rem 0.8rem; border:1px solid var(--border); border-radius:8px;">Admin</a>
+      <div class="top-actions">
+        <!-- Direct clean gateway to user space (Admin button removed) -->
+        <a href="/user" class="user-btn" id="portalBtn">Workspace / Sign in →</a>
+      </div>
     </header>
 
     <div class="tool-grid" id="toolGrid">
-      <div class="loading-shimmer">टूल्स लोड हो रहे हैं...</div>
+      <div style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.95rem;">
+        Tools load ho rahe hain...
+      </div>
     </div>
   </main>
 
   <script>
-    async function loadTools() {
+    async function loadPublicTools() {
       const grid = document.getElementById('toolGrid');
       
-      // 1. Agar Cache me pehle se tools hain, turant render karo (0ms latency)
-      const cachedData = localStorage.getItem('my_cached_tools');
-      if (cachedData) {
-        const cachedTools = JSON.parse(cachedData);
-        renderCards(cachedTools);
+      // Fast local cache check
+      const cached = localStorage.getItem('my_cached_tools');
+      if (cached) {
+        renderCards(JSON.parse(cached));
       }
-    
-      // 2. Background me silently fresh data fetch karo
+
+      // Fetch public approved tools
       const { data: tools, error } = await sb
         .from('tools')
         .select('*')
         .eq('is_public', true)
+        .order('is_pinned', { ascending: false })
         .order('sort_order', { ascending: true });
-    
-      if (!error && tools) {
-        // Cache update kar do future ke liye
+
+      if (!error && tools && tools.length > 0) {
         localStorage.setItem('my_cached_tools', JSON.stringify(tools));
         renderCards(tools);
-      } else if (!cachedData) {
-        grid.innerHTML = '<p style="color:var(--text-muted); text-align:center;">अभी कोई टूल लाइव नहीं है। Admin से अपलोड करें।</p>';
+      } else if (!cached) {
+        grid.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 2rem 0;">Filhal koi public tool live nahi hai.</p>';
       }
     }
-    
+
     function renderCards(tools) {
       const grid = document.getElementById('toolGrid');
-      if (!tools || tools.length === 0) return;
-    
       grid.innerHTML = tools.map(tool => `
         <a href="/tool/${encodeURIComponent(tool.slug)}" class="tool-card">
           <div class="tool-info">
@@ -74,7 +89,7 @@
       `).join('');
     }
 
-    loadTools();
+    loadPublicTools();
   </script>
 </body>
 </html>
