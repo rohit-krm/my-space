@@ -375,21 +375,21 @@
       myTools = mine || [];
       document.getElementById('toolCountTag').innerText = `${myTools.length} tools`;
       
-      // Fetch saved count for each created tool
+      // Saved count check: ab direct tool_shares se query hogi
       for (let t of myTools) {
-        const { count } = await sb.from('user_saved_tools')
+        const { count } = await sb.from('tool_shares')
           .select('*', { count: 'exact', head: true })
           .eq('tool_id', t.id);
         t.saved_count = count || 0;
       }
       renderMyTools();
 
-      // 2. Shared Tools via user_saved_tools mapping
-      const { data: savedEntries } = await sb.from('user_saved_tools')
+      // 2. Shared Tools: Consolidated tool_shares table se fetch karein
+      const { data: shares } = await sb.from('tool_shares')
         .select('tool_id, tools(*)')
-        .eq('user_id', currentUser.id);
+        .or(`user_id.eq.${currentUser.id},shared_email.eq.${currentUser.email}`);
 
-      sharedTools = (savedEntries || [])
+      sharedTools = (shares || [])
         .map(e => e.tools)
         .filter(t => t && t.user_id !== currentUser.id);
 
