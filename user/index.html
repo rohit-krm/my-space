@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>My Tools Portal</title>
+  <title>Creator Workspace — ToolsHub</title>
   <link rel="stylesheet" href="/assets/css/global.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-config.js"></script>
@@ -11,14 +11,12 @@
     body {
       background: #f8fafc;
       color: #0f172a;
-      padding: 0;
       margin: 0;
-      display: block;
       min-height: 100vh;
+      display: block;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
-    /* Navbar */
     .top-header {
       background: #ffffff;
       border-bottom: 1px solid #e2e8f0;
@@ -48,7 +46,7 @@
     .nav-right-slot {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       position: relative;
     }
 
@@ -83,8 +81,8 @@
       border: 1px solid #e2e8f0;
       border-radius: 12px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-      width: 240px;
-      padding: 10px;
+      width: 230px;
+      padding: 8px;
       display: none;
       flex-direction: column;
       z-index: 100;
@@ -93,45 +91,6 @@
       display: flex;
     }
 
-    .user-info-box {
-      padding: 8px 10px;
-      border-bottom: 1px solid #f1f5f9;
-      margin-bottom: 6px;
-    }
-    .user-name {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #0f172a;
-    }
-    .user-email {
-      font-size: 0.75rem;
-      color: #64748b;
-      word-break: break-all;
-    }
-
-    .dropdown-item {
-      padding: 8px 10px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: #334155;
-      text-decoration: none;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .dropdown-item:hover {
-      background: #f8fafc;
-    }
-    .dropdown-item.logout-red {
-      color: #ef4444;
-    }
-
-    /* Main Container */
     .container {
       max-width: 960px;
       margin: 0 auto;
@@ -152,19 +111,18 @@
       background: #f1f5f9;
       color: #334155;
       border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 7px 14px;
-      font-size: 0.82rem;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
     }
 
-    /* Tool Grid */
     .tools-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 14px;
-      margin-top: 14px;
+      margin-top: 10px;
     }
     @media (min-width: 640px) {
       .tools-grid { grid-template-columns: repeat(2, 1fr); }
@@ -175,7 +133,6 @@
       border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 1.15rem;
-      position: relative;
       box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
     .tool-card-box.pinned {
@@ -183,14 +140,16 @@
       background: #fbfdff;
     }
 
-    .pin-badge {
-      font-size: 0.7rem;
+    .badge-pill {
+      font-size: 0.68rem;
       font-weight: 700;
-      color: #1d4ed8;
-      background: #eff6ff;
       padding: 2px 7px;
       border-radius: 6px;
     }
+    .badge-widget { background: #fef3c7; color: #92400e; }
+    .badge-app { background: #e0e7ff; color: #3730a3; }
+    .pin-badge { font-size: 0.7rem; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 7px; border-radius: 6px; }
+    .share-tag { font-size: 0.72rem; color: #16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
 
     /* Google Sign-in Card */
     .google-login-card {
@@ -225,8 +184,8 @@
   <!-- Logged Out View -->
   <div id="loggedOutView" style="display:none;">
     <div class="google-login-card">
-      <h2 style="font-size: 1.3rem; margin-bottom: 6px;">Sign in to Portal</h2>
-      <p style="font-size: 0.85rem; color: #64748b;">Apne tools manage aur customize karne ke liye continue karein</p>
+      <h2 style="font-size: 1.3rem; margin-bottom: 6px;">Sign in to Workspace</h2>
+      <p style="font-size: 0.85rem; color: #64748b;">Apne personal tools manage aur run karne ke liye login karein</p>
       <button class="google-signin-btn" onclick="loginWithGoogle()">
         <svg viewBox="0 0 24 24" style="width:18px; height:18px;">
           <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
@@ -244,66 +203,80 @@
     <header class="top-header">
       <div class="nav-inner">
         <a href="/" class="brand-title">
-          <span>🛠️</span> My Tools
+          <span>🛠️</span> ToolsHub
         </a>
 
         <div class="nav-right-slot">
           <button class="btn-primary" onclick="toggleUploadForm()">+ Add Tool</button>
 
-          <!-- Circle Avatar Button -->
+          <!-- Avatar Button -->
           <button class="avatar-btn" id="avatarBtn" onclick="toggleDropdown()">
             <span id="avatarInitials">U</span>
             <img id="avatarImg" style="display:none;" alt="User">
           </button>
 
-          <!-- Profile Dropdown -->
+          <!-- Dropdown -->
           <div class="profile-dropdown" id="profileDropdown">
-            <div class="user-info-box">
-              <div class="user-name" id="dropdownUserName">User</div>
-              <div class="user-email" id="dropdownUserEmail">user@gmail.com</div>
+            <div style="padding:6px 10px; border-bottom:1px solid #f1f5f9; margin-bottom:6px;">
+              <div id="dropdownUserName" style="font-weight:600; font-size:0.85rem;">User</div>
+              <div id="dropdownUserEmail" style="font-size:0.75rem; color:#64748b; word-break:break-all;"></div>
             </div>
-            <a href="/" class="dropdown-item">🏠 Home Page</a>
-            <button class="dropdown-item logout-red" onclick="logout()">🚪 Sign out</button>
+            <a href="/" style="padding:8px 10px; font-size:0.8rem; text-decoration:none; color:#334155; border-radius:6px;">🏠 Home</a>
+            <button onclick="logout()" style="padding:8px 10px; font-size:0.8rem; text-align:left; border:none; background:none; color:#ef4444; cursor:pointer; width:100%; border-radius:6px;">🚪 Sign out</button>
           </div>
         </div>
       </div>
     </header>
 
     <main class="container">
-      <!-- Add Tool Drawer -->
+      <!-- Add Tool Form Drawer -->
       <div id="uploadDrawer" style="display:none; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;">
-        <h3 style="font-size:1rem; margin-bottom:12px;">Deploy New Tool</h3>
+        <h3 style="font-size:1rem; margin-bottom:12px;">Add New Tool</h3>
         <div style="margin-bottom:10px;">
           <input type="text" id="tTitle" placeholder="Title (e.g. QuickBeam)" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box;">
         </div>
         <div style="margin-bottom:10px;">
-          <input type="text" id="tSlug" placeholder="Slug (e.g. quick-beam)" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box;">
+          <input type="text" id="tSlug" placeholder="Slug (unique link: e.g. quick-beam)" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box;">
         </div>
         <div style="margin-bottom:10px;">
           <input type="text" id="tDesc" placeholder="Description" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box;">
         </div>
+        
+        <!-- Tool Format Selection -->
         <div style="margin-bottom:12px;">
+          <label style="font-size:0.8rem; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Tool Format:</label>
+          <select id="tType" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; background:#fff;">
+            <option value="widget">⚡ Mini Widget (Quick 1-screen utility)</option>
+            <option value="app" selected>🖥️ Full App (Full-page utility)</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:14px;">
           <input type="file" id="tFile" accept=".html">
         </div>
         <div style="display:flex; gap:8px;">
-          <button class="btn-primary" id="uploadBtn" onclick="submitTool()">Publish</button>
+          <button class="btn-primary" id="uploadBtn" onclick="submitTool()">Save Tool</button>
           <button class="btn-secondary" onclick="toggleUploadForm()">Cancel</button>
         </div>
       </div>
 
-      <!-- Tools Section -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h2 style="font-size:1.1rem; font-weight:700;">Your Tools</h2>
+      <!-- Section 1: My Created Tools -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <h2 style="font-size:1.1rem; font-weight:700;">My Tools</h2>
         <span id="toolCountTag" style="font-size:0.8rem; color:#64748b;">0 tools</span>
       </div>
+      <div id="myToolsList" class="tools-grid"></div>
 
-      <div id="toolsList" class="tools-grid"></div>
+      <!-- Section 2: Shared With Me -->
+      <h2 style="font-size:1.1rem; font-weight:700; margin-top:2.5rem; margin-bottom:6px;">Shared with Me</h2>
+      <div id="sharedToolsList" class="tools-grid"></div>
     </main>
   </div>
 
   <script>
     let currentUser = null;
     let myTools = [];
+    let sharedTools = [];
 
     async function loginWithGoogle() {
       await sb.auth.signInWithOAuth({
@@ -318,15 +291,14 @@
     }
 
     function toggleDropdown() {
-      const drop = document.getElementById('profileDropdown');
-      drop.classList.toggle('open');
+      document.getElementById('profileDropdown').classList.toggle('open');
     }
 
-    // Dropdown close on outside click
+    // Close dropdown on outside click
     window.addEventListener('click', (e) => {
       const drop = document.getElementById('profileDropdown');
       const btn = document.getElementById('avatarBtn');
-      if (!btn.contains(e.target) && !drop.contains(e.target)) {
+      if (btn && drop && !btn.contains(e.target) && !drop.contains(e.target)) {
         drop.classList.remove('open');
       }
     });
@@ -346,7 +318,6 @@
       currentUser = session.user;
       document.getElementById('loggedInView').style.display = 'block';
 
-      // Set Profile Details & Google DP
       const metadata = currentUser.user_metadata || {};
       const fullName = metadata.full_name || metadata.name || 'User';
       const avatarUrl = metadata.avatar_url || metadata.picture;
@@ -363,25 +334,34 @@
         document.getElementById('avatarInitials').innerText = fullName[0].toUpperCase();
       }
 
-      loadTools();
+      loadAllTools();
     }
 
-    async function loadTools() {
-      const { data: tools } = await sb.from('tools')
+    async function loadAllTools() {
+      // 1. User's Own Tools
+      const { data: mine } = await sb.from('tools')
         .select('*')
         .eq('user_id', currentUser.id)
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
-      myTools = tools || [];
+      myTools = mine || [];
       document.getElementById('toolCountTag').innerText = `${myTools.length} tools`;
-      renderTools();
+      renderMyTools();
+
+      // 2. Shared Tools via Email
+      const { data: shares } = await sb.from('tool_shares')
+        .select('tool_id, tools(*)')
+        .eq('shared_with_email', currentUser.email);
+
+      sharedTools = (shares || []).map(s => s.tools).filter(Boolean);
+      renderSharedTools();
     }
 
-    function renderTools() {
-      const list = document.getElementById('toolsList');
+    function renderMyTools() {
+      const list = document.getElementById('myToolsList');
       if (myTools.length === 0) {
-        list.innerHTML = '<p style="color:#64748b; font-size:0.88rem;">Abhi koi tool nahi hai. "+ Add Tool" se naya tool jodein.</p>';
+        list.innerHTML = '<p style="color:#64748b; font-size:0.85rem;">Koi tool nahi mila. "+ Add Tool" se naya tool jodein.</p>';
         return;
       }
 
@@ -389,18 +369,50 @@
         <div class="tool-card-box ${t.is_pinned ? 'pinned' : ''}">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
-              <h4 style="font-size:0.95rem; font-weight:600; margin:0 0 4px;">${t.title}</h4>
-              <div style="font-size:0.75rem; color:#64748b;">/tool/${t.slug} • Views: ${t.view_count || 0}</div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <h4 style="font-size:0.95rem; font-weight:600; margin:0;">${t.title}</h4>
+                <span class="badge-pill ${t.tool_type === 'widget' ? 'badge-widget' : 'badge-app'}">${(t.tool_type || 'app').toUpperCase()}</span>
+              </div>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">/tool/${t.slug} • Views: ${t.view_count || 0}</div>
             </div>
-            ${t.is_pinned ? '<span class="pin-badge">PINNED</span>' : ''}
+            <div style="display:flex; align-items:center; gap:4px;">
+              ${t.is_pinned ? '<span class="pin-badge">PINNED</span>' : ''}
+              ${t.is_link_shared ? '<span class="share-tag">SHARED</span>' : ''}
+            </div>
           </div>
-          <p style="font-size:0.82rem; color:#475569; margin:8px 0 14px;">${t.description || ''}</p>
+          <p style="font-size:0.8rem; color:#475569; margin:8px 0 12px;">${t.description || ''}</p>
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <a href="/tool/${t.slug}" target="_blank" class="btn-primary" style="text-decoration:none; padding:5px 12px; font-size:0.78rem;">Launch ↗</a>
-            <div style="display:flex; gap:6px;">
+            <a href="/tool/${t.slug}" target="_blank" class="btn-primary" style="text-decoration:none; padding:4px 10px; font-size:0.75rem;">Launch ↗</a>
+            <div style="display:flex; gap:5px;">
+              <button class="btn-secondary" onclick="toggleLinkShare('${t.id}', ${!t.is_link_shared})">${t.is_link_shared ? 'Disable Link' : '🔗 Link'}</button>
+              <button class="btn-secondary" onclick="shareToGmail('${t.id}')">✉️ Gmail</button>
               <button class="btn-secondary" onclick="togglePin('${t.id}', ${!t.is_pinned})">${t.is_pinned ? 'Unpin' : '📌 Pin'}</button>
               <button class="btn-secondary" style="color:#ef4444;" onclick="deleteTool('${t.id}')">✕</button>
             </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSharedTools() {
+      const list = document.getElementById('sharedToolsList');
+      if (sharedTools.length === 0) {
+        list.innerHTML = '<p style="color:#64748b; font-size:0.85rem;">Aapke sath koi tool share nahi kiya gaya hai.</p>';
+        return;
+      }
+
+      list.innerHTML = sharedTools.map(t => `
+        <div class="tool-card-box">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <h4 style="font-size:0.95rem; font-weight:600; margin:0;">${t.title}</h4>
+              <div style="font-size:0.75rem; color:#64748b;">Shared Tool</div>
+            </div>
+            <span class="badge-pill ${t.tool_type === 'widget' ? 'badge-widget' : 'badge-app'}">${(t.tool_type || 'app').toUpperCase()}</span>
+          </div>
+          <p style="font-size:0.8rem; color:#475569; margin:8px 0 12px;">${t.description || ''}</p>
+          <div style="display:flex; justify-content:space-between;">
+            <a href="/tool/${t.slug}" target="_blank" class="btn-primary" style="text-decoration:none; padding:4px 10px; font-size:0.75rem;">Launch ↗</a>
           </div>
         </div>
       `).join('');
@@ -415,17 +427,42 @@
         }
       }
       await sb.from('tools').update({ is_pinned: makePinned }).eq('id', toolId);
-      loadTools();
+      loadAllTools();
+    }
+
+    async function toggleLinkShare(toolId, makeShared) {
+      await sb.from('tools').update({ is_link_shared: makeShared }).eq('id', toolId);
+      if (makeShared) {
+        const tool = myTools.find(t => t.id === toolId);
+        const link = `${window.location.origin}/tool/${tool.slug}`;
+        navigator.clipboard.writeText(link);
+        alert(`Link share activate ho gaya aur copy ho gaya:\n${link}`);
+      }
+      loadAllTools();
+    }
+
+    async function shareToGmail(toolId) {
+      const email = prompt('User ka Gmail address likhein jiske sath share karna hai:');
+      if (!email || !email.includes('@')) return;
+
+      const { error } = await sb.from('tool_shares').insert([{
+        tool_id: toolId,
+        shared_with_email: email.trim().toLowerCase()
+      }]);
+
+      if (error) alert(error.message);
+      else alert(`${email} ke sath tool share ho gaya!`);
     }
 
     async function submitTool() {
       const title = document.getElementById('tTitle').value.trim();
       const slug = document.getElementById('tSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
       const desc = document.getElementById('tDesc').value.trim();
+      const type = document.getElementById('tType').value;
       const file = document.getElementById('tFile').files[0];
 
       if (!title || !slug || !file) {
-        alert('Title, Slug aur File required hain');
+        alert('Title, Slug aur File required hain.');
         return;
       }
 
@@ -440,20 +477,20 @@
         title,
         slug,
         description: desc,
+        tool_type: type,
         file_url: publicUrl,
-        is_public: false,
-        approval_status: 'draft'
+        is_link_shared: false,
+        is_featured_home: false
       }]);
 
       if (dbErr) { alert(dbErr.message); return; }
-
       location.reload();
     }
 
     async function deleteTool(id) {
-      if (!confirm('Tool delete karna chahte hain?')) return;
+      if (!confirm('Kya aap is tool ko delete karna chahte hain?')) return;
       await sb.from('tools').delete().eq('id', id);
-      loadTools();
+      loadAllTools();
     }
 
     init();
