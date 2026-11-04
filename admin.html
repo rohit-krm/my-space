@@ -2,105 +2,358 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Admin Dashboard</title>
   <link rel="stylesheet" href="/assets/css/global.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-config.js"></script>
   <style>
-    .form-card {
-      background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border-subtle: #edf2f7;
+      --border-strong: #e2e8f0;
+      --text-pri: #0f172a;
+      --text-sec: #64748b;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --danger: #ef4444;
+      --danger-soft: #fef2f2;
+      --radius: 14px;
+      --radius-sm: 8px;
     }
-    .input-group { margin-bottom: 0.85rem; }
-    .input-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
-    .input-group input {
-      width: 100%; padding: 0.7rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none;
+
+    body {
+      background: var(--bg);
+      color: var(--text-pri);
+      padding: 1.5rem 1rem 4rem;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
     }
-    .btn {
-      width: 100%; padding: 0.75rem; border: none; border-radius: 8px; background: var(--accent);
-      color: #fff; font-weight: 600; cursor: pointer;
+
+    .container {
+      width: 100%;
+      max-width: 680px;
     }
-    .btn-secondary { background: #f1f5f9; color: var(--text-main); }
-    .search-input {
-      width: 100%; padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border);
-      font-size: 0.95rem; margin-bottom: 1.2rem; outline: none; background: #fff;
+
+    /* Minimal Header */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
     }
-    .tool-manage-item {
-      background: #fff; border: 1px solid var(--border); border-radius: 12px;
-      padding: 1rem; margin-bottom: 1rem;
+    .dashboard-header h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
     }
-    .tool-header-row { display: flex; justify-content: space-between; align-items: center; }
-    .tool-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-    .action-btn {
-      padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;
-      border: 1px solid var(--border); background: #f8fafc; cursor: pointer;
+    .dashboard-header p {
+      font-size: 0.85rem;
+      color: var(--text-sec);
+      margin-top: 2px;
     }
-    .version-box {
-      margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 8px;
-      font-size: 0.8rem; border: 1px dashed var(--border);
+
+    /* Action Bar (Search + Add) */
+    .controls-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.25rem;
     }
-    .version-item {
-      display: flex; justify-content: space-between; align-items: center; padding: 4px 0;
-      border-bottom: 1px solid #edf2f7;
+    .search-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
-    .version-item:last-child { border-bottom: none; }
-    .live-badge {
-      background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 700;
+    .search-box input {
+      width: 100%;
+      border: none;
+      outline: none;
+      padding: 10px 0;
+      font-size: 0.9rem;
+      color: var(--text-pri);
+      background: transparent;
     }
+    .btn-pill {
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0 18px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: opacity 0.15s ease;
+    }
+    .btn-pill:active { opacity: 0.85; }
+
+    /* Cards & Forms */
+    .surface-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+      margin-bottom: 1.25rem;
+    }
+
+    .input-field {
+      margin-bottom: 0.85rem;
+    }
+    .input-field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-sec);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .input-field input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .input-field input:focus {
+      border-color: var(--accent);
+    }
+
+    /* Tool Item Card */
+    .tool-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      margin-bottom: 0.85rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+      transition: border-color 0.15s;
+    }
+    .tool-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .tool-title-group h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-pri);
+    }
+    .tool-slug-sub {
+      font-size: 0.78rem;
+      color: var(--text-sec);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .chip {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 99px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .tool-control-icons {
+      display: flex;
+      gap: 4px;
+    }
+    .icon-btn {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      color: var(--text-sec);
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: var(--border-subtle); }
+    .icon-btn.danger { color: var(--danger); border-color: var(--danger-soft); }
+    .icon-btn.danger:hover { background: var(--danger-soft); }
+
+    .tool-actions-footer {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .sub-action-btn {
+      background: var(--bg);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-pri);
+      cursor: pointer;
+    }
+    .sub-action-btn.primary-sub {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: #bfdbfe;
+    }
+
+    /* History Box */
+    .history-drawer {
+      margin-top: 10px;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-strong);
+    }
+    .version-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      font-size: 0.78rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .version-row:last-child { border-bottom: none; }
+    .live-tag {
+      background: #dcfce7;
+      color: #15803d;
+      font-weight: 700;
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* Clean Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1e293b;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 9px 18px;
+      border-radius: 99px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+      z-index: 9999;
+      opacity: 0;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      pointer-events: none;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Lightweight Modal Dialog */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.35);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9990;
+      padding: 1rem;
+    }
+    .modal-card {
+      background: #ffffff;
+      border-radius: var(--radius);
+      padding: 1.3rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    .modal-card h4 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+    .modal-card p { font-size: 0.85rem; color: var(--text-sec); margin-bottom: 1.2rem; }
+    .modal-btns { display: flex; justify-content: flex-end; gap: 8px; }
   </style>
 </head>
 <body>
 
+  <!-- Toast Element -->
+  <div id="toast">Ready</div>
+
+  <!-- Custom Confirmation Modal -->
+  <div id="confirmModal" class="modal-backdrop">
+    <div class="modal-card">
+      <h4 id="modalTitle">Confirm Action</h4>
+      <p id="modalDesc">Kya aap aage badhna chahte hain?</p>
+      <div class="modal-btns">
+        <button class="sub-action-btn" onclick="closeConfirmModal(false)">Cancel</button>
+        <button class="btn-pill" id="modalConfirmBtn" style="padding: 6px 14px;">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <main class="container">
+    <!-- Auth Section -->
     <div id="authView">
-      <header>
-        <h1>Admin Login</h1>
-        <p>प्लेटफ़ॉर्म मैनेज करने के लिए लॉगिन करें</p>
-      </header>
-      <div class="form-card">
-        <div class="input-group">
-          <label>Email</label>
-          <input type="email" id="email" placeholder="you@gmail.com">
+      <div class="dashboard-header">
+        <div>
+          <h1>Admin Login</h1>
+          <p>Tools manage karne ke liye authenticate karein</p>
         </div>
-        <div class="input-group">
+      </div>
+      <div class="surface-card">
+        <div class="input-field">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="name@example.com">
+        </div>
+        <div class="input-field">
           <label>Password</label>
           <input type="password" id="password" placeholder="••••••••">
         </div>
-        <button class="btn" onclick="login()">Login</button>
+        <button class="btn-pill" style="width:100%; padding: 10px; justify-content:center;" onclick="login()">Sign In</button>
       </div>
     </div>
 
+    <!-- Main Workspace -->
     <div id="adminView" style="display:none;">
-      <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.2rem;">
+      <header class="dashboard-header">
         <div>
           <h1>Tool Manager</h1>
-          <p>Tools search, edit aur version control</p>
+          <p>Manage, order, aur deploy HTML micro-tools</p>
         </div>
-        <button class="action-btn" onclick="logout()">Logout</button>
+        <button class="icon-btn" onclick="logout()" style="padding: 6px 12px;">Logout</button>
       </header>
 
-      <!-- Action & Search Bar -->
-      <div style="display:flex; gap:10px; margin-bottom: 1rem;">
-        <input type="text" id="searchInput" class="search-input" style="margin-bottom:0;" placeholder="🔍 Search tool by name..." oninput="filterTools()">
-        <button class="btn" style="width:auto; white-space:nowrap; padding:0 1.2rem;" onclick="toggleAddForm()">+ Add Tool</button>
+      <div class="controls-row">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search tool by name or slug..." oninput="filterTools()">
+        </div>
+        <button class="btn-pill" onclick="toggleAddForm()">+ Add Tool</button>
       </div>
 
-      <!-- Collapsible Add Tool Form -->
-      <div id="addToolForm" class="form-card" style="display:none;">
-        <h3 style="margin-bottom:0.8rem; font-size:1.05rem;">Upload New Tool</h3>
-        <div class="input-group"><label>Title</label><input type="text" id="toolTitle" placeholder="e.g. Markdown Parser"></div>
-        <div class="input-group"><label>URL Slug</label><input type="text" id="toolSlug" placeholder="e.g. markdown-parser"></div>
-        <div class="input-group"><label>Description</label><input type="text" id="toolDesc" placeholder="e.g. Quick clean markdown generator"></div>
-        <div class="input-group"><label>Badge</label><input type="text" id="toolBadge" placeholder="e.g. Text, AI"></div>
-        <div class="input-group"><label>HTML File</label><input type="file" id="toolFile" accept=".html"></div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn" id="uploadBtn" onclick="uploadNewTool()">Publish Tool</button>
-          <button class="btn btn-secondary" onclick="toggleAddForm()">Cancel</button>
+      <!-- Collapsible Form -->
+      <div id="addToolForm" class="surface-card" style="display:none;">
+        <h3 style="font-size:0.95rem; font-weight:600; margin-bottom:12px;">Deploy New Tool</h3>
+        <div class="input-field"><label>Title</label><input type="text" id="toolTitle" placeholder="e.g. Markdown Parser"></div>
+        <div class="input-field"><label>Slug (URL Path)</label><input type="text" id="toolSlug" placeholder="e.g. markdown-parser"></div>
+        <div class="input-field"><label>Description</label><input type="text" id="toolDesc" placeholder="Single-line short details"></div>
+        <div class="input-field"><label>Badge</label><input type="text" id="toolBadge" placeholder="e.g. AI, Code, Utility"></div>
+        <div class="input-field"><label>HTML File</label><input type="file" id="toolFile" accept=".html"></div>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+          <button class="btn-pill" id="uploadBtn" style="padding:8px 14px;" onclick="uploadNewTool()">Publish Tool</button>
+          <button class="sub-action-btn" onclick="toggleAddForm()">Cancel</button>
         </div>
       </div>
 
-      <!-- Hidden file input for updating specific tools -->
+      <!-- Hidden file input for file update -->
       <input type="file" id="updateFileInput" accept=".html" style="display:none;" onchange="handleFileUpdate(event)">
 
       <div id="toolsList"></div>
@@ -110,6 +363,33 @@
   <script>
     let allTools = [];
     let toolUpdatingId = null;
+    let confirmResolver = null;
+
+    // Toast Trigger
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    // Modal Trigger
+    function openConfirmModal(title, desc) {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalDesc').innerText = desc;
+      document.getElementById('confirmModal').style.display = 'flex';
+      return new Promise(resolve => {
+        confirmResolver = resolve;
+      });
+    }
+
+    function closeConfirmModal(res) {
+      document.getElementById('confirmModal').style.display = 'none';
+      if (confirmResolver) confirmResolver(res);
+      confirmResolver = null;
+    }
+
+    document.getElementById('modalConfirmBtn').addEventListener('click', () => closeConfirmModal(true));
 
     async function checkAuth() {
       const { data: { session } } = await sb.auth.getSession();
@@ -127,18 +407,22 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const { error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) alert(error.message);
-      else checkAuth();
+      if (error) showToast(error.message);
+      else {
+        showToast('Authenticated');
+        checkAuth();
+      }
     }
 
     async function logout() {
       await sb.auth.signOut();
+      showToast('Logged out');
       checkAuth();
     }
 
     function toggleAddForm() {
-      const form = document.getElementById('addToolForm');
-      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      const f = document.getElementById('addToolForm');
+      f.style.display = f.style.display === 'none' ? 'block' : 'none';
     }
 
     async function loadAdminTools() {
@@ -148,24 +432,23 @@
     }
 
     function filterTools() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = allTools.filter(t => t.title.toLowerCase().includes(query) || t.slug.toLowerCase().includes(query));
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allTools.filter(t => t.title.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q));
       renderTools(filtered);
     }
 
     async function renderTools(tools) {
       const list = document.getElementById('toolsList');
       if (!tools || tools.length === 0) {
-        list.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Koi tool nahi mila.</p>';
+        list.innerHTML = '<p style="color:var(--text-sec); font-size:0.85rem; text-align:center; padding:1.5rem 0;">No tools found.</p>';
         return;
       }
 
       list.innerHTML = '';
       for (let t of tools) {
         const item = document.createElement('div');
-        item.className = 'tool-manage-item';
-        
-        // Fetch up to 5 versions
+        item.className = 'tool-item';
+
         const { data: versions } = await sb
           .from('tool_versions')
           .select('*')
@@ -176,30 +459,33 @@
         const vList = versions || [];
 
         item.innerHTML = `
-          <div class="tool-header-row">
-            <div>
-              <strong>${t.title}</strong>
-              <div style="font-size:0.8rem; color:var(--text-muted);">/tool/${t.slug} • <span class="badge" style="padding:1px 6px;">${t.badge || 'Tool'}</span></div>
+          <div class="tool-header">
+            <div class="tool-title-group">
+              <h3>${t.title}</h3>
+              <div class="tool-slug-sub">
+                <span>/tool/${t.slug}</span>
+                <span class="chip">${t.badge || 'Tool'}</span>
+              </div>
             </div>
-            <div>
-              <button class="action-btn" onclick="moveOrder('${t.id}', -1)">▲</button>
-              <button class="action-btn" onclick="moveOrder('${t.id}', 1)">▼</button>
-              <button class="action-btn" onclick="deleteTool('${t.id}')" style="color:red;">✕</button>
+            <div class="tool-control-icons">
+              <button class="icon-btn" onclick="moveOrder('${t.id}', -1)" title="Move up">▲</button>
+              <button class="icon-btn" onclick="moveOrder('${t.id}', 1)" title="Move down">▼</button>
+              <button class="icon-btn danger" onclick="deleteTool('${t.id}', '${t.title}')" title="Delete">✕</button>
             </div>
           </div>
 
-          <div class="tool-actions">
-            <button class="action-btn" style="background:#eff6ff; color:#2563eb; border-color:#bfdbfe;" onclick="promptUpdateHTML('${t.id}', '${t.slug}')">⬆ Update HTML File</button>
-            <button class="action-btn" onclick="toggleVersions('ver-${t.id}')">⏳ History (${vList.length})</button>
+          <div class="tool-actions-footer">
+            <button class="sub-action-btn primary-sub" onclick="promptUpdateHTML('${t.id}', '${t.slug}')">↑ Update HTML</button>
+            <button class="sub-action-btn" onclick="toggleVersions('ver-${t.id}')">⏳ History (${vList.length})</button>
           </div>
 
-          <div id="ver-${t.id}" class="version-box" style="display:none;">
-            <div style="font-weight:600; margin-bottom:5px;">Recent Versions (Max 5):</div>
+          <div id="ver-${t.id}" class="history-drawer" style="display:none;">
+            <div style="font-size:0.75rem; font-weight:700; color:var(--text-sec); margin-bottom:6px;">STORED VERSIONS (MAX 5)</div>
             ${vList.map(v => `
-              <div class="version-item">
-                <span>${v.version_tag} <small style="color:var(--text-muted);">(${new Date(v.created_at).toLocaleDateString()})</small></span>
+              <div class="version-row">
+                <span>${v.version_tag} <small style="color:var(--text-sec); font-size:0.7rem;">(${new Date(v.created_at).toLocaleDateString()})</small></span>
                 <div>
-                  ${v.file_url === t.file_url ? '<span class="live-badge">LIVE</span>' : `<button class="action-btn" onclick="rollbackVersion('${t.id}', '${v.file_url}')">Make Live</button>`}
+                  ${v.file_url === t.file_url ? '<span class="live-tag">LIVE</span>' : `<button class="sub-action-btn" style="padding:2px 8px; font-size:0.7rem;" onclick="rollbackVersion('${t.id}', '${v.file_url}')">Make Live</button>`}
                 </div>
               </div>
             `).join('')}
@@ -214,7 +500,6 @@
       box.style.display = box.style.display === 'none' ? 'block' : 'none';
     }
 
-    // 1. Upload New Tool Logic
     async function uploadNewTool() {
       const title = document.getElementById('toolTitle').value.trim();
       const slug = document.getElementById('toolSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
@@ -223,12 +508,12 @@
       const file = document.getElementById('toolFile').files[0];
 
       if (!title || !slug || !file) {
-        alert('Title, Slug aur File required hain!');
+        showToast('Title, slug aur HTML file zaroori hain');
         return;
       }
 
       const btn = document.getElementById('uploadBtn');
-      btn.innerText = 'Uploading...';
+      btn.innerText = 'Publishing...';
       btn.disabled = true;
 
       try {
@@ -238,35 +523,31 @@
 
         const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(filePath);
 
-        // Insert in tools
         const { data: newTool, error: dbErr } = await sb.from('tools').insert([{
           title, slug, description: desc, badge: badge || 'Tool', file_url: publicUrl, sort_order: Math.floor(Date.now() / 1000)
         }]).select().single();
 
         if (dbErr) throw dbErr;
 
-        // Record initial version
         await sb.from('tool_versions').insert([{
           tool_id: newTool.id, file_url: publicUrl, version_tag: 'v1.0 (Initial)', is_live: true
         }]);
 
-        // Invalidate frontend cache
         localStorage.removeItem('my_cached_tools');
-        alert('Tool Live ho gaya!');
-        location.reload();
+        showToast('Tool live ho gaya!');
+        setTimeout(() => location.reload(), 600);
       } catch (err) {
-        alert(err.message);
+        showToast(err.message);
       } finally {
         btn.innerText = 'Publish Tool';
         btn.disabled = false;
       }
     }
 
-    // 2. Direct Update HTML with Confirmation
-    function promptUpdateHTML(toolId, slug) {
-      if (!confirm(`Kya aap "${slug}" ka HTML code nayi file se update karna chahte hain? Purana version history me safe rahega.`)) {
-        return;
-      }
+    async function promptUpdateHTML(toolId, slug) {
+      const ok = await openConfirmModal('Update HTML File', `Kya aap "${slug}" ka code nayi HTML file se update karna chahte hain? Purana version history me safe rahega.`);
+      if (!ok) return;
+
       toolUpdatingId = toolId;
       document.getElementById('updateFileInput').click();
     }
@@ -279,51 +560,50 @@
       const versionTag = `v_upd_${new Date().toISOString().slice(5, 16).replace('T', '_')}`;
       const filePath = `${tool.slug}-${Date.now()}.html`;
 
+      showToast('Uploading new version...');
       try {
         const { error: upErr } = await sb.storage.from('tools-vault').upload(filePath, file);
         if (upErr) throw upErr;
 
         const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(filePath);
 
-        // Update active file in tools
         await sb.from('tools').update({ file_url: publicUrl }).eq('id', tool.id);
-
-        // Mark previous versions non-live & insert new version
         await sb.from('tool_versions').update({ is_live: false }).eq('tool_id', tool.id);
         await sb.from('tool_versions').insert([{
           tool_id: tool.id, file_url: publicUrl, version_tag: versionTag, is_live: true
         }]);
 
         localStorage.removeItem('my_cached_tools');
-        alert('File successfully update ho gayi aur live version set ho gaya!');
+        showToast('Live version updated!');
         loadAdminTools();
       } catch (err) {
-        alert(err.message);
+        showToast(err.message);
       } finally {
         e.target.value = '';
         toolUpdatingId = null;
       }
     }
 
-    // 3. Rollback / Set Live Version
     async function rollbackVersion(toolId, fileUrl) {
-      if (!confirm('Is version ko live karna chahte hain?')) return;
+      const ok = await openConfirmModal('Rollback Version', 'Kya aap is purane version ko live karna chahte hain?');
+      if (!ok) return;
+
       await sb.from('tools').update({ file_url: fileUrl }).eq('id', toolId);
       await sb.from('tool_versions').update({ is_live: false }).eq('tool_id', toolId);
       await sb.from('tool_versions').update({ is_live: true }).eq('file_url', fileUrl);
 
       localStorage.removeItem('my_cached_tools');
-      alert('Version switch ho gaya!');
+      showToast('Version switched to LIVE');
       loadAdminTools();
     }
 
     async function moveOrder(id, delta) {
-      const index = allTools.findIndex(t => t.id === id);
-      const targetIndex = index + delta;
-      if (targetIndex < 0 || targetIndex >= allTools.length) return;
+      const idx = allTools.findIndex(t => t.id === id);
+      const targetIdx = idx + delta;
+      if (targetIdx < 0 || targetIdx >= allTools.length) return;
 
-      const currentTool = allTools[index];
-      const targetTool = allTools[targetIndex];
+      const currentTool = allTools[idx];
+      const targetTool = allTools[targetIdx];
 
       await sb.from('tools').update({ sort_order: targetTool.sort_order }).eq('id', currentTool.id);
       await sb.from('tools').update({ sort_order: currentTool.sort_order }).eq('id', targetTool.id);
@@ -332,10 +612,13 @@
       loadAdminTools();
     }
 
-    async function deleteTool(id) {
-      if (!confirm('Kya aap is tool ko permanently delete karna chahte hain?')) return;
+    async function deleteTool(id, name) {
+      const ok = await openConfirmModal('Delete Tool', `Kya aap "${name}" ko permanently delete karna chahte hain?`);
+      if (!ok) return;
+
       await sb.from('tools').delete().eq('id', id);
       localStorage.removeItem('my_cached_tools');
+      showToast('Tool deleted');
       loadAdminTools();
     }
 
