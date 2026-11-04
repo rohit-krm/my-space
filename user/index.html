@@ -38,7 +38,7 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
 
-  <!-- ================= LOGGED OUT GATEWAY ================= -->
+  <!-- ================= LOGGED OUT VIEW ================= -->
   <div id="loggedOutView" class="min-h-screen flex flex-col items-center justify-center p-4" style="display:none;">
     <div class="max-w-sm w-full bg-white border border-slate-200 rounded-2xl p-7 text-center shadow-sm">
       <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-4 font-bold">
@@ -63,7 +63,7 @@
     </div>
   </div>
 
-  <!-- ================= AUTHENTICATED WORKSPACE ================= -->
+  <!-- ================= AUTHENTICATED VIEW ================= -->
   <div id="loggedInView" style="display:none;" class="flex-1 flex flex-col">
     
     <!-- Top Header -->
@@ -79,18 +79,18 @@
 
           <!-- Primary Navigation Tabs -->
           <nav class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-            <button id="viewBtnDashboard" onclick="switchMainView('dashboard')" class="px-3 py-1.5 rounded-lg bg-white shadow-xs text-blue-600">
-              ⚡ Dashboard
+            <button id="viewBtnDashboard" onclick="switchMainView('dashboard')" class="px-3 py-1.5 rounded-lg bg-white shadow-xs text-blue-600 flex items-center gap-1.5">
+              <span>⚡ Dashboard</span>
             </button>
-            <button id="viewBtnManage" onclick="switchMainView('manage')" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">
-              📁 My Tools
+            <button id="viewBtnManage" onclick="switchMainView('manage')" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+              <span>📁 My Tools</span>
             </button>
           </nav>
         </div>
 
         <!-- Right User Actions -->
         <div class="flex items-center gap-3">
-          <button onclick="toggleUploadForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <button onclick="openUploadModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add Tool</span>
           </button>
@@ -122,14 +122,14 @@
     <!-- Content Workspace -->
     <main class="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 flex-1">
       
-      <!-- ================= VIEW 1: LIVE INTERACTIVE DASHBOARD (TOP 10 TOOLS DOCK) ================= -->
+      <!-- ================= VIEW 1: DASHBOARD (TOP 10 DOCK) ================= -->
       <section id="dashboardView">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h1 class="text-lg font-bold text-slate-900">Quick App Workspace</h1>
             <p class="text-xs text-slate-500">Aapke top 10 daily most-used aur pinned tools ka live interactive dock</p>
           </div>
-          <span class="text-xs font-mono bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md border border-blue-200/60 font-semibold" id="dashCountTag">0 Tools</span>
+          <span class="text-xs font-mono bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md border border-blue-200/60 font-semibold" id="dashCountTag">0 / 10 Tools</span>
         </div>
 
         <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-5">
@@ -138,7 +138,7 @@
             <div class="col-span-full py-6 text-center text-xs text-slate-400 font-mono">Tools load ho rahe hain...</div>
           </div>
 
-          <!-- Interactive Active Runner Container -->
+          <!-- Active Runner -->
           <div class="mt-4">
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2">
@@ -146,11 +146,11 @@
                 <span id="dashActiveTitle" class="text-xs font-bold text-slate-800">Tool Runner</span>
               </div>
               <div class="flex items-center gap-2">
-                <button id="dashEditCodeBtn" onclick="openCurrentToolEditor()" class="text-xs text-slate-600 hover:text-blue-600 font-medium px-2 py-0.5 rounded border border-slate-200">
-                  ✏️ Edit Code
+                <button id="dashEditCodeBtn" onclick="openCurrentToolEditor()" class="text-xs text-slate-600 hover:text-blue-600 font-medium px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1">
+                  <i data-lucide="code" class="w-3.5 h-3.5"></i> Edit Code
                 </button>
                 <a id="dashFullscreenBtn" href="#" target="_blank" class="text-xs text-blue-600 font-bold hover:underline">
-                  Launch Fullscreen ↗
+                  Fullscreen ↗
                 </a>
               </div>
             </div>
@@ -164,30 +164,6 @@
 
       <!-- ================= VIEW 2: MANAGE TOOLS & SHARED LIST ================= -->
       <section id="manageView" class="hidden">
-        
-        <!-- Upload Drawer -->
-        <div id="uploadDrawer" class="hidden bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-          <h3 class="text-sm font-bold text-slate-900 mb-3">Add New Tool</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            <input type="text" id="tTitle" placeholder="Tool Title (e.g. QuickCalc)" class="p-2 border border-slate-200 rounded-lg text-xs">
-            <input type="text" id="tSlug" placeholder="Slug (unique link: e.g. quick-calc)" class="p-2 border border-slate-200 rounded-lg text-xs">
-          </div>
-          <input type="text" id="tDesc" placeholder="Short description" class="w-full p-2 border border-slate-200 rounded-lg text-xs mb-3">
-          
-          <div class="flex items-center gap-3 mb-4">
-            <select id="tType" class="p-2 border border-slate-200 rounded-lg text-xs bg-white">
-              <option value="widget">⚡ Mini Widget</option>
-              <option value="app" selected>🖥️ Full App</option>
-            </select>
-            <input type="file" id="tFile" accept=".html" class="text-xs">
-          </div>
-
-          <div class="flex gap-2">
-            <button onclick="submitTool()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Upload & Deploy</button>
-            <button onclick="toggleUploadForm()" class="bg-slate-100 text-slate-600 px-3 py-2 rounded-lg text-xs font-semibold">Cancel</button>
-          </div>
-        </div>
-
         <h2 class="text-sm font-bold text-slate-900 mb-2">My Created Tools</h2>
         <div id="myToolsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8"></div>
 
@@ -198,7 +174,53 @@
     </main>
   </div>
 
-  <!-- ================= IN-PLACE CODE EDITOR MODAL (CREATOR ONLY) ================= -->
+  <!-- ================= GLOBAL ADD TOOL MODAL ================= -->
+  <div id="addToolModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-4 h-4 text-blue-600"></i>
+          <span>Add New HTML Tool</span>
+        </h3>
+        <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-700">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Title</label>
+          <input type="text" id="tTitle" placeholder="e.g. GST Calculator" class="w-full p-2 border border-slate-200 rounded-lg outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Slug (URL link)</label>
+          <input type="text" id="tSlug" placeholder="e.g. gst-calculator" class="w-full p-2 border border-slate-200 rounded-lg outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Short Description</label>
+          <input type="text" id="tDesc" placeholder="Daily billing and tax" class="w-full p-2 border border-slate-200 rounded-lg outline-none focus:border-blue-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Format</label>
+            <select id="tType" class="w-full p-2 border border-slate-200 rounded-lg bg-white">
+              <option value="app" selected>🖥️ Full App</option>
+              <option value="widget">⚡ Mini Widget</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">HTML File (.html)</label>
+            <input type="file" id="tFile" accept=".html" class="w-full p-1.5 border border-slate-200 rounded-lg">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-2">
+        <button onclick="closeUploadModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">Cancel</button>
+        <button onclick="submitTool()" id="uploadSubmitBtn" class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm">Upload & Deploy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= IN-PLACE CODE EDITOR MODAL ================= -->
   <div id="editorModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-3 sm:p-5">
     <div class="bg-white rounded-2xl max-w-4xl w-full h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
       
@@ -221,17 +243,17 @@
       </div>
 
       <div class="flex-1 p-3 bg-slate-950">
-        <textarea id="codeEditorArea" class="w-full h-full bg-transparent text-emerald-400 font-mono text-xs outline-none resize-none leading-relaxed" spellcheck="false" placeholder="Loading tool HTML code..."></textarea>
+        <textarea id="codeEditorArea" class="w-full h-full bg-transparent text-emerald-400 font-mono text-xs outline-none resize-none leading-relaxed" spellcheck="false" placeholder="Loading code..."></textarea>
       </div>
 
       <div class="px-4 py-2 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-500 flex justify-between">
-        <span>* Direct storage overwrite (Only creator has permission)</span>
+        <span>* Direct safe storage overwrite (Creator Only)</span>
         <span id="editorStatus">Ready</span>
       </div>
     </div>
   </div>
 
-  <!-- ================= CLIENT WORKFLOW ================= -->
+  <!-- ================= LOGIC SCRIPT ================= -->
   <script>
     lucide.createIcons();
     let currentUser = null;
@@ -265,8 +287,12 @@
       }
     });
 
-    function toggleUploadForm() {
-      document.getElementById('uploadDrawer').classList.toggle('hidden');
+    // Add Tool Modal Handlers
+    function openUploadModal() {
+      document.getElementById('addToolModal').classList.remove('hidden');
+    }
+    function closeUploadModal() {
+      document.getElementById('addToolModal').classList.add('hidden');
     }
 
     function switchMainView(view) {
@@ -277,11 +303,11 @@
       const bDash = document.getElementById('viewBtnDashboard');
       const bManage = document.getElementById('viewBtnManage');
       if (isDash) {
-        bDash.className = "px-3 py-1.5 rounded-lg bg-white shadow-xs text-blue-600";
-        bManage.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900";
+        bDash.className = "px-3 py-1.5 rounded-lg bg-white shadow-xs text-blue-600 flex items-center gap-1.5";
+        bManage.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5";
       } else {
-        bManage.className = "px-3 py-1.5 rounded-lg bg-white shadow-xs text-blue-600";
-        bDash.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900";
+        bManage.className = "px-3 py-1.5 rounded-lg bg-white shadow-xs text-blue-600 flex items-center gap-1.5";
+        bDash.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5";
       }
     }
 
@@ -315,7 +341,7 @@
     }
 
     async function loadData() {
-      // 1. Fetch user's own tools
+      // 1. Fetch user tools
       const { data: mine } = await sb.from('tools')
         .select('*')
         .eq('user_id', currentUser.id)
@@ -324,14 +350,13 @@
 
       myTools = mine || [];
 
-      // 2. Fetch shared tools
+      // 2. Fetch shared tools from consolidated tool_shares table
       const { data: shares } = await sb.from('tool_shares')
         .select('tool_id, tools(*)')
         .or(`user_id.eq.${currentUser.id},shared_email.eq.${currentUser.email}`);
 
       sharedTools = (shares || []).map(s => s.tools).filter(t => t && t.user_id !== currentUser.id);
 
-      // Build Top 10 Tools for Quick App Dashboard View (Pinned first, then latest/most used)
       top10Tools = [...myTools].slice(0, 10);
       document.getElementById('dashCountTag').innerText = `${top10Tools.length} / 10 Tools`;
 
@@ -342,7 +367,7 @@
     function renderDashboardDock() {
       const container = document.getElementById('dashTabsContainer');
       if (top10Tools.length === 0) {
-        container.innerHTML = '<p class="col-span-full text-center text-xs text-slate-400 py-4">Koi tool upload nahi hai. "+ Add Tool" se tool jodein.</p>';
+        container.innerHTML = '<p class="col-span-full text-center text-xs text-slate-400 py-4">Koi tool upload nahi hai. "+ Add Tool" se naya tool jodein.</p>';
         return;
       }
 
@@ -364,7 +389,6 @@
       if (!tool) return;
       activeToolIndex = idx;
 
-      // Active tab visual highlight
       document.querySelectorAll('#dashTabsContainer button').forEach((btn, i) => {
         btn.classList.toggle('tab-active', i === idx);
       });
@@ -372,51 +396,40 @@
       document.getElementById('dashActiveTitle').innerText = tool.title;
       document.getElementById('dashFullscreenBtn').href = `/tool/${tool.slug}`;
 
-      // Only creator can edit code
       const editBtn = document.getElementById('dashEditCodeBtn');
       if (editBtn) {
-        if (tool.user_id === currentUser.id) {
-          editBtn.classList.remove('hidden');
-        } else {
-          editBtn.classList.add('hidden');
-        }
+        if (tool.user_id === currentUser.id) editBtn.classList.remove('hidden');
+        else editBtn.classList.add('hidden');
       }
 
       const frame = document.getElementById('dashFrame');
       
-      // Direct reliable fetch
       try {
         const fetchUrl = tool.file_url ? (tool.file_url + '?t=' + Date.now()) : null;
         if (!fetchUrl) throw new Error("No URL");
 
         const res = await fetch(fetchUrl);
-        if (!res.ok) throw new Error("Fetch failed with status " + res.status);
+        if (!res.ok) throw new Error("Fetch failed");
         
         const htmlText = await res.text();
         frame.srcdoc = htmlText;
 
-        // Background non-blocking analytics update (isolated)
+        // Background non-blocking access tracking
         setTimeout(() => {
           try {
             if (typeof sb !== 'undefined' && sb && sb.rpc) {
-              sb.rpc('increment_tool_view', { tool_slug: tool.slug }).then(() => {}).catch(() => {});
+              sb.rpc('increment_tool_view', { tool_slug: tool.slug }).catch(() => {});
             }
           } catch(e) {}
         }, 1000);
 
       } catch (err) {
-        console.error("Tool load error detail:", err);
-        // Fallback: Agar fetch block ho to direct iframe src laga do
-        if (tool.file_url) {
-          frame.src = tool.file_url;
-        } else {
-          frame.srcdoc = '<p style="padding:20px;font-family:sans-serif;color:#ef4444;font-size:13px;">File load nahi ho saki. Kripya reload karein.</p>';
-        }
+        if (tool.file_url) frame.src = tool.file_url;
+        else frame.srcdoc = '<p style="padding:20px;font-family:sans-serif;color:red;">File load error</p>';
       }
     }
 
     function renderManageLists() {
-      // My Tools
       const myGrid = document.getElementById('myToolsGrid');
       if (myTools.length === 0) {
         myGrid.innerHTML = '<p class="text-xs text-slate-400 py-3">No tools found.</p>';
@@ -445,7 +458,6 @@
         `).join('');
       }
 
-      // Shared Tools
       const sharedGrid = document.getElementById('sharedToolsGrid');
       if (sharedTools.length === 0) {
         sharedGrid.innerHTML = '<p class="text-xs text-slate-400 py-3">Koi tool share nahi hua hai.</p>';
@@ -502,11 +514,17 @@
     async function saveCodeChanges() {
       if (!currentEditingTool) return;
       const newCode = document.getElementById('codeEditorArea').value;
+
+      // Anti-XSS and token exfiltration guardrail
+      if (/document\.cookie/i.test(newCode) || /localStorage\.getItem\(["']sb-/i.test(newCode)) {
+        alert('Security Alert: Malicious code detected (Cookie/Token access is prohibited).');
+        return;
+      }
+
       const saveBtn = document.getElementById('editorSaveBtn');
       saveBtn.innerText = 'Saving...';
       saveBtn.disabled = true;
 
-      // Extract storage relative path from file_url
       const urlParts = currentEditingTool.file_url.split('/tools-vault/');
       if (urlParts.length < 2) {
         alert('File path resolve nahi ho saki.');
@@ -529,7 +547,6 @@
         return;
       }
 
-      // Update timestamp
       await sb.from('tools').update({
         last_accessed_at: new Date().toISOString()
       }).eq('id', currentEditingTool.id);
@@ -539,12 +556,11 @@
         closeCodeEditor();
         saveBtn.innerText = 'Save Code';
         saveBtn.disabled = false;
-        // Reload runner iframe
         switchDashTool(activeToolIndex);
       }, 700);
     }
 
-    // Toggle Pin (Max 3 pinned, auto-top in dashboard)
+    // Toggle Pin (Max 3 pinned)
     async function togglePin(toolId, makePinned) {
       if (makePinned) {
         const count = myTools.filter(t => t.is_pinned).length;
@@ -580,9 +596,25 @@
         return;
       }
 
+      // Security check on uploaded file
+      const fileText = await file.text();
+      if (/document\.cookie/i.test(fileText) || /localStorage\.getItem\(["']sb-/i.test(fileText)) {
+        alert('Security Alert: Upload rejected! Dangerous code (cookie/token access) detected.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('uploadSubmitBtn');
+      submitBtn.innerText = 'Uploading...';
+      submitBtn.disabled = true;
+
       const filePath = `${currentUser.id}/${slug}-${Date.now()}.html`;
       const { error: upErr } = await sb.storage.from('tools-vault').upload(filePath, file, { contentType: 'text/html' });
-      if (upErr) { alert(upErr.message); return; }
+      if (upErr) { 
+        alert(upErr.message); 
+        submitBtn.innerText = 'Upload & Deploy';
+        submitBtn.disabled = false;
+        return; 
+      }
 
       const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(filePath);
 
@@ -598,7 +630,14 @@
         last_accessed_at: new Date().toISOString()
       }]);
 
-      if (dbErr) { alert(dbErr.message); return; }
+      if (dbErr) { 
+        alert(dbErr.message); 
+        submitBtn.innerText = 'Upload & Deploy';
+        submitBtn.disabled = false;
+        return; 
+      }
+
+      closeUploadModal();
       location.reload();
     }
 
