@@ -50,7 +50,6 @@
       position: relative;
     }
 
-    /* Google Profile Avatar & Dropdown */
     .avatar-btn {
       width: 36px;
       height: 36px;
@@ -150,11 +149,20 @@
     .badge-app { background: #e0e7ff; color: #3730a3; }
     .pin-badge { font-size: 0.7rem; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 7px; border-radius: 6px; }
     .share-tag { font-size: 0.72rem; color: #16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .revoked-tag { font-size: 0.72rem; color: #ef4444; background: #fee2e2; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
 
-    /* Google Sign-in Card */
+    /* Centered Login View */
+    .login-container-wrap {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
     .google-login-card {
-      max-width: 400px;
-      margin: 5rem auto;
+      max-width: 380px;
+      width: 100%;
       background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 16px;
@@ -177,24 +185,45 @@
       margin-top: 1.25rem;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
+    .back-home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.82rem;
+      color: #64748b;
+      text-decoration: none;
+      margin-top: 1.25rem;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .back-home-link:hover {
+      color: #0f172a;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Logged Out View -->
+  <!-- Clean Logged Out View with Back to Home -->
   <div id="loggedOutView" style="display:none;">
-    <div class="google-login-card">
-      <h2 style="font-size: 1.3rem; margin-bottom: 6px;">Sign in to Workspace</h2>
-      <p style="font-size: 0.85rem; color: #64748b;">Apne personal tools manage aur run karne ke liye login karein</p>
-      <button class="google-signin-btn" onclick="loginWithGoogle()">
-        <svg viewBox="0 0 24 24" style="width:18px; height:18px;">
-          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
-          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.02 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-        </svg>
-        Sign in with Google
-      </button>
+    <div class="login-container-wrap">
+      <div class="google-login-card">
+        <h2 style="font-size: 1.3rem; margin-bottom: 6px;">Sign in to Workspace</h2>
+        <p style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">Apne personal tools manage karne aur shared access lene ke liye login karein</p>
+        
+        <button class="google-signin-btn" onclick="loginWithGoogle()">
+          <svg viewBox="0 0 24 24" style="width:18px; height:18px;">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.02 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+          </svg>
+          Sign in with Google
+        </button>
+
+        <div>
+          <a href="/" class="back-home-link">← Back to Homepage</a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -209,13 +238,11 @@
         <div class="nav-right-slot">
           <button class="btn-primary" onclick="toggleUploadForm()">+ Add Tool</button>
 
-          <!-- Avatar Button -->
           <button class="avatar-btn" id="avatarBtn" onclick="toggleDropdown()">
             <span id="avatarInitials">U</span>
             <img id="avatarImg" style="display:none;" alt="User">
           </button>
 
-          <!-- Dropdown -->
           <div class="profile-dropdown" id="profileDropdown">
             <div style="padding:6px 10px; border-bottom:1px solid #f1f5f9; margin-bottom:6px;">
               <div id="dropdownUserName" style="font-weight:600; font-size:0.85rem;">User</div>
@@ -242,7 +269,6 @@
           <input type="text" id="tDesc" placeholder="Description" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box;">
         </div>
         
-        <!-- Tool Format Selection -->
         <div style="margin-bottom:12px;">
           <label style="font-size:0.8rem; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Tool Format:</label>
           <select id="tType" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; background:#fff;">
@@ -279,9 +305,11 @@
     let sharedTools = [];
 
     async function loginWithGoogle() {
+      // Return URL support: agar shared link kholte hue login maanga gaya ho
+      const redirectUrl = window.location.origin + window.location.pathname + window.location.search;
       await sb.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin + '/user' }
+        options: { redirectTo: redirectUrl }
       });
     }
 
@@ -294,7 +322,6 @@
       document.getElementById('profileDropdown').classList.toggle('open');
     }
 
-    // Close dropdown on outside click
     window.addEventListener('click', (e) => {
       const drop = document.getElementById('profileDropdown');
       const btn = document.getElementById('avatarBtn');
@@ -338,7 +365,7 @@
     }
 
     async function loadAllTools() {
-      // 1. User's Own Tools
+      // 1. User ke banaye huye tools
       const { data: mine } = await sb.from('tools')
         .select('*')
         .eq('user_id', currentUser.id)
@@ -347,14 +374,25 @@
 
       myTools = mine || [];
       document.getElementById('toolCountTag').innerText = `${myTools.length} tools`;
+      
+      // Fetch saved count for each created tool
+      for (let t of myTools) {
+        const { count } = await sb.from('user_saved_tools')
+          .select('*', { count: 'exact', head: true })
+          .eq('tool_id', t.id);
+        t.saved_count = count || 0;
+      }
       renderMyTools();
 
-      // 2. Shared Tools via Email
-      const { data: shares } = await sb.from('tool_shares')
+      // 2. Shared Tools via user_saved_tools mapping
+      const { data: savedEntries } = await sb.from('user_saved_tools')
         .select('tool_id, tools(*)')
-        .eq('shared_with_email', currentUser.email);
+        .eq('user_id', currentUser.id);
 
-      sharedTools = (shares || []).map(s => s.tools).filter(Boolean);
+      sharedTools = (savedEntries || [])
+        .map(e => e.tools)
+        .filter(t => t && t.user_id !== currentUser.id);
+
       renderSharedTools();
     }
 
@@ -373,19 +411,22 @@
                 <h4 style="font-size:0.95rem; font-weight:600; margin:0;">${t.title}</h4>
                 <span class="badge-pill ${t.tool_type === 'widget' ? 'badge-widget' : 'badge-app'}">${(t.tool_type || 'app').toUpperCase()}</span>
               </div>
-              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">/tool/${t.slug} • Views: ${t.view_count || 0}</div>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">
+                /tool/${t.slug} • Views: ${t.view_count || 0} • <strong>Saved by ${t.saved_count || 0} users</strong>
+              </div>
             </div>
             <div style="display:flex; align-items:center; gap:4px;">
               ${t.is_pinned ? '<span class="pin-badge">PINNED</span>' : ''}
-              ${t.is_link_shared ? '<span class="share-tag">SHARED</span>' : ''}
+              ${t.is_link_shared ? '<span class="share-tag">ACTIVE LINK</span>' : '<span class="revoked-tag">PRIVATE</span>'}
             </div>
           </div>
           <p style="font-size:0.8rem; color:#475569; margin:8px 0 12px;">${t.description || ''}</p>
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <a href="/tool/${t.slug}" target="_blank" class="btn-primary" style="text-decoration:none; padding:4px 10px; font-size:0.75rem;">Launch ↗</a>
             <div style="display:flex; gap:5px;">
-              <button class="btn-secondary" onclick="toggleLinkShare('${t.id}', ${!t.is_link_shared})">${t.is_link_shared ? 'Disable Link' : '🔗 Link'}</button>
-              <button class="btn-secondary" onclick="shareToGmail('${t.id}')">✉️ Gmail</button>
+              <button class="btn-secondary" onclick="toggleLinkShare('${t.id}', ${!t.is_link_shared})">
+                ${t.is_link_shared ? '🔒 Revoke Link' : '🔗 Share Link'}
+              </button>
               <button class="btn-secondary" onclick="togglePin('${t.id}', ${!t.is_pinned})">${t.is_pinned ? 'Unpin' : '📌 Pin'}</button>
               <button class="btn-secondary" style="color:#ef4444;" onclick="deleteTool('${t.id}')">✕</button>
             </div>
@@ -397,7 +438,7 @@
     function renderSharedTools() {
       const list = document.getElementById('sharedToolsList');
       if (sharedTools.length === 0) {
-        list.innerHTML = '<p style="color:#64748b; font-size:0.85rem;">Aapke sath koi tool share nahi kiya gaya hai.</p>';
+        list.innerHTML = '<p style="color:#64748b; font-size:0.85rem;">Aapke sath save kiya hua koi shared tool nahi hai.</p>';
         return;
       }
 
@@ -418,6 +459,19 @@
       `).join('');
     }
 
+    async function toggleLinkShare(toolId, makeShared) {
+      await sb.from('tools').update({ is_link_shared: makeShared }).eq('id', toolId);
+      if (makeShared) {
+        const tool = myTools.find(t => t.id === toolId);
+        const link = `${window.location.origin}/tool/${tool.slug}`;
+        navigator.clipboard.writeText(link);
+        alert(`Link share activate ho gaya aur copy ho gaya:\n${link}`);
+      } else {
+        alert('Tool ka link share access band (Revoke) kar diya gaya hai. Ab sirf aap hi ise chala payenge.');
+      }
+      loadAllTools();
+    }
+
     async function togglePin(toolId, makePinned) {
       if (makePinned) {
         const count = myTools.filter(t => t.is_pinned).length;
@@ -428,30 +482,6 @@
       }
       await sb.from('tools').update({ is_pinned: makePinned }).eq('id', toolId);
       loadAllTools();
-    }
-
-    async function toggleLinkShare(toolId, makeShared) {
-      await sb.from('tools').update({ is_link_shared: makeShared }).eq('id', toolId);
-      if (makeShared) {
-        const tool = myTools.find(t => t.id === toolId);
-        const link = `${window.location.origin}/tool/${tool.slug}`;
-        navigator.clipboard.writeText(link);
-        alert(`Link share activate ho gaya aur copy ho gaya:\n${link}`);
-      }
-      loadAllTools();
-    }
-
-    async function shareToGmail(toolId) {
-      const email = prompt('User ka Gmail address likhein jiske sath share karna hai:');
-      if (!email || !email.includes('@')) return;
-
-      const { error } = await sb.from('tool_shares').insert([{
-        tool_id: toolId,
-        shared_with_email: email.trim().toLowerCase()
-      }]);
-
-      if (error) alert(error.message);
-      else alert(`${email} ke sath tool share ho gaya!`);
     }
 
     async function submitTool() {
