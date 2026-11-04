@@ -10,26 +10,43 @@
   <style>
     .form-card {
       background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 1.25rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
     }
-    .input-group { margin-bottom: 1rem; }
-    .input-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; }
-    .input-group input, .input-group textarea {
-      width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none;
+    .input-group { margin-bottom: 0.85rem; }
+    .input-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .input-group input {
+      width: 100%; padding: 0.7rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none;
     }
     .btn {
-      width: 100%; padding: 0.85rem; border: none; border-radius: 8px; background: var(--accent);
+      width: 100%; padding: 0.75rem; border: none; border-radius: 8px; background: var(--accent);
       color: #fff; font-weight: 600; cursor: pointer;
     }
-    .btn-secondary { background: #f1f5f9; color: var(--text-main); margin-top: 0.5rem; }
-    .tool-manage-item {
-      display: flex; align-items: center; justify-content: space-between;
-      background: #fff; border: 1px solid var(--border); border-radius: 12px;
-      padding: 0.85rem 1rem; margin-bottom: 0.75rem;
+    .btn-secondary { background: #f1f5f9; color: var(--text-main); }
+    .search-input {
+      width: 100%; padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border);
+      font-size: 0.95rem; margin-bottom: 1.2rem; outline: none; background: #fff;
     }
-    .order-btns button {
-      border: 1px solid var(--border); background: #f8fafc; padding: 0.3rem 0.6rem;
-      border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+    .tool-manage-item {
+      background: #fff; border: 1px solid var(--border); border-radius: 12px;
+      padding: 1rem; margin-bottom: 1rem;
+    }
+    .tool-header-row { display: flex; justify-content: space-between; align-items: center; }
+    .tool-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .action-btn {
+      padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc; cursor: pointer;
+    }
+    .version-box {
+      margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 8px;
+      font-size: 0.8rem; border: 1px dashed var(--border);
+    }
+    .version-item {
+      display: flex; justify-content: space-between; align-items: center; padding: 4px 0;
+      border-bottom: 1px solid #edf2f7;
+    }
+    .version-item:last-child { border-bottom: none; }
+    .live-badge {
+      background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 700;
     }
   </style>
 </head>
@@ -55,46 +72,45 @@
     </div>
 
     <div id="adminView" style="display:none;">
-      <header style="display:flex; justify-content:space-between; align-items:center;">
+      <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.2rem;">
         <div>
           <h1>Tool Manager</h1>
-          <p>नया टूल जोड़ें और क्रम बदलें</p>
+          <p>Tools search, edit aur version control</p>
         </div>
-        <button class="btn-secondary" style="padding:0.4rem 0.8rem; border-radius:8px; border:1px solid var(--border); cursor:pointer;" onclick="logout()">Logout</button>
+        <button class="action-btn" onclick="logout()">Logout</button>
       </header>
 
-      <!-- New Tool Upload Form -->
-      <div class="form-card">
-        <h3 style="margin-bottom:1rem; font-size:1.1rem;">+ Upload New HTML Tool</h3>
-        <div class="input-group">
-          <label>Tool Title</label>
-          <input type="text" id="toolTitle" placeholder="e.g. QuickBeam Share">
-        </div>
-        <div class="input-group">
-          <label>URL Slug (English, no spaces)</label>
-          <input type="text" id="toolSlug" placeholder="e.g. quick-beam">
-        </div>
-        <div class="input-group">
-          <label>Description</label>
-          <input type="text" id="toolDesc" placeholder="e.g. Instant P2P file share">
-        </div>
-        <div class="input-group">
-          <label>Badge</label>
-          <input type="text" id="toolBadge" placeholder="e.g. P2P, AI, Code">
-        </div>
-        <div class="input-group">
-          <label>Select Tool HTML File</label>
-          <input type="file" id="toolFile" accept=".html">
-        </div>
-        <button class="btn" id="uploadBtn" onclick="uploadTool()">Publish Tool Instantly</button>
+      <!-- Action & Search Bar -->
+      <div style="display:flex; gap:10px; margin-bottom: 1rem;">
+        <input type="text" id="searchInput" class="search-input" style="margin-bottom:0;" placeholder="🔍 Search tool by name..." oninput="filterTools()">
+        <button class="btn" style="width:auto; white-space:nowrap; padding:0 1.2rem;" onclick="toggleAddForm()">+ Add Tool</button>
       </div>
 
-      <h3 style="margin-bottom:1rem; font-size:1.1rem;">Live Tools Ordering</h3>
+      <!-- Collapsible Add Tool Form -->
+      <div id="addToolForm" class="form-card" style="display:none;">
+        <h3 style="margin-bottom:0.8rem; font-size:1.05rem;">Upload New Tool</h3>
+        <div class="input-group"><label>Title</label><input type="text" id="toolTitle" placeholder="e.g. Markdown Parser"></div>
+        <div class="input-group"><label>URL Slug</label><input type="text" id="toolSlug" placeholder="e.g. markdown-parser"></div>
+        <div class="input-group"><label>Description</label><input type="text" id="toolDesc" placeholder="e.g. Quick clean markdown generator"></div>
+        <div class="input-group"><label>Badge</label><input type="text" id="toolBadge" placeholder="e.g. Text, AI"></div>
+        <div class="input-group"><label>HTML File</label><input type="file" id="toolFile" accept=".html"></div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn" id="uploadBtn" onclick="uploadNewTool()">Publish Tool</button>
+          <button class="btn btn-secondary" onclick="toggleAddForm()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Hidden file input for updating specific tools -->
+      <input type="file" id="updateFileInput" accept=".html" style="display:none;" onchange="handleFileUpdate(event)">
+
       <div id="toolsList"></div>
     </div>
   </main>
 
   <script>
+    let allTools = [];
+    let toolUpdatingId = null;
+
     async function checkAuth() {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
@@ -120,7 +136,86 @@
       checkAuth();
     }
 
-    async function uploadTool() {
+    function toggleAddForm() {
+      const form = document.getElementById('addToolForm');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function loadAdminTools() {
+      const { data: tools } = await sb.from('tools').select('*').order('sort_order', { ascending: true });
+      allTools = tools || [];
+      renderTools(allTools);
+    }
+
+    function filterTools() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allTools.filter(t => t.title.toLowerCase().includes(query) || t.slug.toLowerCase().includes(query));
+      renderTools(filtered);
+    }
+
+    async function renderTools(tools) {
+      const list = document.getElementById('toolsList');
+      if (!tools || tools.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Koi tool nahi mila.</p>';
+        return;
+      }
+
+      list.innerHTML = '';
+      for (let t of tools) {
+        const item = document.createElement('div');
+        item.className = 'tool-manage-item';
+        
+        // Fetch up to 5 versions
+        const { data: versions } = await sb
+          .from('tool_versions')
+          .select('*')
+          .eq('tool_id', t.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        const vList = versions || [];
+
+        item.innerHTML = `
+          <div class="tool-header-row">
+            <div>
+              <strong>${t.title}</strong>
+              <div style="font-size:0.8rem; color:var(--text-muted);">/tool/${t.slug} • <span class="badge" style="padding:1px 6px;">${t.badge || 'Tool'}</span></div>
+            </div>
+            <div>
+              <button class="action-btn" onclick="moveOrder('${t.id}', -1)">▲</button>
+              <button class="action-btn" onclick="moveOrder('${t.id}', 1)">▼</button>
+              <button class="action-btn" onclick="deleteTool('${t.id}')" style="color:red;">✕</button>
+            </div>
+          </div>
+
+          <div class="tool-actions">
+            <button class="action-btn" style="background:#eff6ff; color:#2563eb; border-color:#bfdbfe;" onclick="promptUpdateHTML('${t.id}', '${t.slug}')">⬆ Update HTML File</button>
+            <button class="action-btn" onclick="toggleVersions('ver-${t.id}')">⏳ History (${vList.length})</button>
+          </div>
+
+          <div id="ver-${t.id}" class="version-box" style="display:none;">
+            <div style="font-weight:600; margin-bottom:5px;">Recent Versions (Max 5):</div>
+            ${vList.map(v => `
+              <div class="version-item">
+                <span>${v.version_tag} <small style="color:var(--text-muted);">(${new Date(v.created_at).toLocaleDateString()})</small></span>
+                <div>
+                  ${v.file_url === t.file_url ? '<span class="live-badge">LIVE</span>' : `<button class="action-btn" onclick="rollbackVersion('${t.id}', '${v.file_url}')">Make Live</button>`}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        list.appendChild(item);
+      }
+    }
+
+    function toggleVersions(id) {
+      const box = document.getElementById(id);
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // 1. Upload New Tool Logic
+    async function uploadNewTool() {
       const title = document.getElementById('toolTitle').value.trim();
       const slug = document.getElementById('toolSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
       const desc = document.getElementById('toolDesc').value.trim();
@@ -128,7 +223,7 @@
       const file = document.getElementById('toolFile').files[0];
 
       if (!title || !slug || !file) {
-        alert('Title, Slug और File तीनों ज़रूरी हैं!');
+        alert('Title, Slug aur File required hain!');
         return;
       }
 
@@ -137,75 +232,110 @@
       btn.disabled = true;
 
       try {
-        // 1. Supabase Storage में फाइल अपलोड करें
-        const filePath = `${slug}-${Date.now()}.html`;
+        const filePath = `${slug}-v1-${Date.now()}.html`;
         const { error: storageErr } = await sb.storage.from('tools-vault').upload(filePath, file);
         if (storageErr) throw storageErr;
 
         const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(filePath);
 
-        // 2. Database में रिकॉर्ड इन्सर्ट करें
-        const { error: dbErr } = await sb.from('tools').insert([{
-          title, slug, description: desc, badge: badge || 'Tool', file_url: publicUrl, sort_order: Date.now()
-        }]);
+        // Insert in tools
+        const { data: newTool, error: dbErr } = await sb.from('tools').insert([{
+          title, slug, description: desc, badge: badge || 'Tool', file_url: publicUrl, sort_order: Math.floor(Date.now() / 1000)
+        }]).select().single();
 
         if (dbErr) throw dbErr;
 
-        alert('टूल लाइव हो गया!');
+        // Record initial version
+        await sb.from('tool_versions').insert([{
+          tool_id: newTool.id, file_url: publicUrl, version_tag: 'v1.0 (Initial)', is_live: true
+        }]);
+
+        // Invalidate frontend cache
+        localStorage.removeItem('my_cached_tools');
+        alert('Tool Live ho gaya!');
         location.reload();
       } catch (err) {
         alert(err.message);
       } finally {
-        btn.innerText = 'Publish Tool Instantly';
+        btn.innerText = 'Publish Tool';
         btn.disabled = false;
       }
     }
 
-    async function loadAdminTools() {
-      const list = document.getElementById('toolsList');
-      const { data: tools } = await sb.from('tools').select('*').order('sort_order', { ascending: true });
-
-      if (!tools || tools.length === 0) {
-        list.innerHTML = '<p style="color:var(--text-muted);">कोई टूल नहीं मिला।</p>';
+    // 2. Direct Update HTML with Confirmation
+    function promptUpdateHTML(toolId, slug) {
+      if (!confirm(`Kya aap "${slug}" ka HTML code nayi file se update karna chahte hain? Purana version history me safe rahega.`)) {
         return;
       }
+      toolUpdatingId = toolId;
+      document.getElementById('updateFileInput').click();
+    }
 
-      list.innerHTML = tools.map((t, idx) => `
-        <div class="tool-manage-item">
-          <div>
-            <strong>${t.title}</strong>
-            <div style="font-size:0.8rem; color:var(--text-muted);">${t.slug}</div>
-          </div>
-          <div class="order-btns">
-            <button onclick="moveOrder('${t.id}', -1)" ${idx === 0 ? 'disabled' : ''}>▲</button>
-            <button onclick="moveOrder('${t.id}', 1)" ${idx === tools.length - 1 ? 'disabled' : ''}>▼</button>
-            <button onclick="deleteTool('${t.id}')" style="color:red; margin-left:8px;">✕</button>
-          </div>
-        </div>
-      `).join('');
+    async function handleFileUpdate(e) {
+      const file = e.target.files[0];
+      if (!file || !toolUpdatingId) return;
+
+      const tool = allTools.find(t => t.id === toolUpdatingId);
+      const versionTag = `v_upd_${new Date().toISOString().slice(5, 16).replace('T', '_')}`;
+      const filePath = `${tool.slug}-${Date.now()}.html`;
+
+      try {
+        const { error: upErr } = await sb.storage.from('tools-vault').upload(filePath, file);
+        if (upErr) throw upErr;
+
+        const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(filePath);
+
+        // Update active file in tools
+        await sb.from('tools').update({ file_url: publicUrl }).eq('id', tool.id);
+
+        // Mark previous versions non-live & insert new version
+        await sb.from('tool_versions').update({ is_live: false }).eq('tool_id', tool.id);
+        await sb.from('tool_versions').insert([{
+          tool_id: tool.id, file_url: publicUrl, version_tag: versionTag, is_live: true
+        }]);
+
+        localStorage.removeItem('my_cached_tools');
+        alert('File successfully update ho gayi aur live version set ho gaya!');
+        loadAdminTools();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        e.target.value = '';
+        toolUpdatingId = null;
+      }
+    }
+
+    // 3. Rollback / Set Live Version
+    async function rollbackVersion(toolId, fileUrl) {
+      if (!confirm('Is version ko live karna chahte hain?')) return;
+      await sb.from('tools').update({ file_url: fileUrl }).eq('id', toolId);
+      await sb.from('tool_versions').update({ is_live: false }).eq('tool_id', toolId);
+      await sb.from('tool_versions').update({ is_live: true }).eq('file_url', fileUrl);
+
+      localStorage.removeItem('my_cached_tools');
+      alert('Version switch ho gaya!');
+      loadAdminTools();
     }
 
     async function moveOrder(id, delta) {
-      const { data: tools } = await sb.from('tools').select('*').order('sort_order', { ascending: true });
-      const index = tools.findIndex(t => t.id === id);
-      if (index < 0) return;
-
+      const index = allTools.findIndex(t => t.id === id);
       const targetIndex = index + delta;
-      if (targetIndex < 0 || targetIndex >= tools.length) return;
+      if (targetIndex < 0 || targetIndex >= allTools.length) return;
 
-      const currentTool = tools[index];
-      const targetTool = tools[targetIndex];
+      const currentTool = allTools[index];
+      const targetTool = allTools[targetIndex];
 
-      // Swap sort_order
       await sb.from('tools').update({ sort_order: targetTool.sort_order }).eq('id', currentTool.id);
       await sb.from('tools').update({ sort_order: currentTool.sort_order }).eq('id', targetTool.id);
 
+      localStorage.removeItem('my_cached_tools');
       loadAdminTools();
     }
 
     async function deleteTool(id) {
-      if (!confirm('क्या आप वाकई इस टूल को हटाना चाहते हैं?')) return;
+      if (!confirm('Kya aap is tool ko permanently delete karna chahte hain?')) return;
       await sb.from('tools').delete().eq('id', id);
+      localStorage.removeItem('my_cached_tools');
       loadAdminTools();
     }
 
