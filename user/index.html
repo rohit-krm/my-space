@@ -45,13 +45,12 @@
           </a>
 
           <nav class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-            <button id="viewBtnDashboard" onclick="switchMainView('dashboard')" class="px-3 py-1.5 rounded-lg bg-white shadow-xs text-blue-600">⚡ Dashboard</button>
-            <button id="viewBtnManage" onclick="switchMainView('manage')" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">📁 My Tools</button>
+            <button id="viewBtnDashboard" onclick="switchMainView('dashboard')" class="px-3 py-1.5 rounded-lg bg-white shadow-xs text-blue-600 flex items-center gap-1.5">⚡ Dashboard</button>
+            <button id="viewBtnManage" onclick="switchMainView('manage')" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5">📁 My Tools</button>
           </nav>
         </div>
 
         <div class="flex items-center gap-3">
-          <!-- Dedicated New Page Link -->
           <a href="/user/new" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add Tool</span>
@@ -91,7 +90,6 @@
             <p class="text-xs text-slate-500">Aapke top 10 most-used aur pinned tools ka live interactive dock</p>
           </div>
 
-          <!-- Sorting Filters -->
           <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-2 py-1 text-xs">
             <span class="text-slate-400 font-medium">Sort by:</span>
             <select id="sortFilter" onchange="applySort(this.value)" class="bg-transparent font-semibold text-slate-700 outline-none">
@@ -103,12 +101,10 @@
         </div>
 
         <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-5">
-          <!-- Dock Tabs -->
           <div id="dashTabsContainer" class="grid grid-cols-2 sm:grid-cols-5 gap-2 pb-4 border-b border-slate-100">
             <div class="col-span-full py-6 text-center text-xs text-slate-400 font-mono">Loading tools...</div>
           </div>
 
-          <!-- Active Runner -->
           <div class="mt-4">
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2">
@@ -119,14 +115,12 @@
                 <button id="dashEditCodeBtn" onclick="openCurrentToolEditor()" class="text-xs text-slate-600 hover:text-blue-600 font-medium px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1">
                   <i data-lucide="code" class="w-3.5 h-3.5"></i> Edit Code
                 </button>
-                <a id="dashFullscreenBtn" href="#" target="_blank" class="text-xs text-blue-600 font-bold hover:underline">
-                  Fullscreen ↗
-                </a>
+                <a id="dashFullscreenBtn" href="#" target="_blank" class="text-xs text-blue-600 font-bold hover:underline">Fullscreen ↗</a>
               </div>
             </div>
 
             <div class="w-full h-[520px] rounded-xl bg-slate-50 border border-slate-200 overflow-hidden relative shadow-inner">
-              <iframe id="dashFrame" class="w-full h-full border-0" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads" title="Live Tool Canvas"></iframe>
+              <iframe id="dashFrame" class="w-full h-full border-0" sandbox="allow-scripts allow-forms allow-downloads" title="Live Tool Canvas"></iframe>
             </div>
           </div>
         </div>
@@ -134,10 +128,13 @@
 
       <!-- ================= MANAGE VIEW ================= -->
       <section id="manageView" class="hidden">
-        <h2 class="text-sm font-bold text-slate-900 mb-2">My Created Tools</h2>
-        <div id="myToolsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8"></div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold text-slate-900">My Created Tools & Versions</h2>
+          <span class="text-xs text-slate-400 font-mono" id="myToolsCountTag">0 Tools</span>
+        </div>
+        <div id="myToolsGrid" class="space-y-4 mb-8"></div>
 
-        <h2 class="text-sm font-bold text-slate-900 mb-2">Shared with Me</h2>
+        <h2 class="text-sm font-bold text-slate-900 mb-3">Shared with Me</h2>
         <div id="sharedToolsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
       </section>
 
@@ -174,6 +171,7 @@
     let top10Tools = [];
     let activeToolIndex = 0;
     let currentEditingTool = null;
+    let toolVersionsMap = {};
 
     async function logout() {
       await sb.auth.signOut();
@@ -228,6 +226,19 @@
         .order('last_accessed_at', { ascending: false });
 
       myTools = mine || [];
+      document.getElementById('myToolsCountTag').innerText = `${myTools.length} Tools`;
+
+      // Pre-fetch versions for all user tools
+      const { data: allVersions } = await sb.from('tool_versions')
+        .select('*')
+        .in('tool_id', myTools.map(t => t.id))
+        .order('version_number', { ascending: false });
+
+      toolVersionsMap = {};
+      (allVersions || []).forEach(v => {
+        if (!toolVersionsMap[v.tool_id]) toolVersionsMap[v.tool_id] = [];
+        toolVersionsMap[v.tool_id].push(v);
+      });
 
       const { data: shares } = await sb.from('tool_shares')
         .select('tool_id, tools(*)')
@@ -246,11 +257,9 @@
       } else if (criteria === 'alpha') {
         sorted.sort((a, b) => a.title.localeCompare(b.title));
       } else {
-        // Recent
         sorted.sort((a, b) => new Date(b.last_accessed_at) - new Date(a.last_accessed_at));
       }
 
-      // Keep pinned on top
       sorted.sort((a, b) => (b.is_pinned === true ? 1 : 0) - (a.is_pinned === true ? 1 : 0));
       top10Tools = sorted.slice(0, 10);
       renderDashboardDock();
@@ -265,7 +274,6 @@
 
       const params = new URLSearchParams(window.location.search);
       const highlightSlug = params.get('highlight');
-
       let targetIndex = 0;
 
       container.innerHTML = top10Tools.map((t, idx) => {
@@ -316,37 +324,198 @@
       }
     }
 
+    // ================= ENHANCED CARDS WITH VERSIONS ACCORDION =================
     function renderManageLists() {
       const myGrid = document.getElementById('myToolsGrid');
-      myGrid.innerHTML = myTools.map(t => `
-        <div class="bg-white border border-slate-200 rounded-xl p-4">
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <h4 class="text-xs font-bold text-slate-900">${t.title}</h4>
-              <div class="text-[10px] text-slate-500 font-mono mt-0.5">/tool/${t.slug} • Views: ${t.view_count || 0}</div>
+      if (myTools.length === 0) {
+        myGrid.innerHTML = '<p class="text-xs text-slate-400 py-3">No tools found.</p>';
+      } else {
+        myGrid.innerHTML = myTools.map(t => {
+          const versions = toolVersionsMap[t.id] || [];
+          const activeVer = versions.find(v => v.file_url === t.file_url);
+          const activeVerNum = activeVer ? activeVer.version_number : 1;
+
+          return `
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs transition-all hover:border-slate-300">
+              <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-sm font-bold text-slate-900 truncate">${t.title}</h3>
+                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold border border-blue-200/60">Live: v${activeVerNum}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded ${t.is_link_shared ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'}">
+                      ${t.is_link_shared ? 'LINK ACTIVE' : 'PRIVATE'}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-1">${t.description || 'No description provided'}</p>
+                  <div class="text-[11px] text-slate-400 font-mono mt-1.5 flex items-center gap-3">
+                    <span>/tool/${t.slug}</span>
+                    <span>•</span>
+                    <span>Views: ${t.view_count || 0}</span>
+                  </div>
+                </div>
+
+                <!-- Action Toolbar -->
+                <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+                  <a href="/tool/${t.slug}" target="_blank" class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold transition-colors">Launch ↗</a>
+                  <button onclick="openEditorForTool('${t.id}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold text-slate-700">✏️ Code</button>
+                  <button onclick="toggleLinkShare('${t.id}', ${!t.is_link_shared})" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold text-slate-700">${t.is_link_shared ? 'Revoke' : 'Share'}</button>
+                  <button onclick="togglePin('${t.id}', ${!t.is_pinned})" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold text-slate-700">${t.is_pinned ? 'Unpin' : '📌 Pin'}</button>
+                  <button onclick="deleteToolPermanently('${t.id}', '${t.storage_path}')" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-semibold">✕</button>
+                </div>
+              </div>
+
+              <!-- Version Expand & Direct File Upload Section -->
+              <div class="mt-4 pt-3.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <button onclick="toggleVersionsDropdown('${t.id}')" class="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold">
+                  <i data-lucide="layers" class="w-3.5 h-3.5 text-blue-600"></i>
+                  <span>Manage Versions (${versions.length || 1}/3)</span>
+                  <i data-lucide="chevron-down" id="chevron-${t.id}" class="w-3.5 h-3.5 transition-transform"></i>
+                </button>
+
+                <!-- In-card Quick Upload New Version -->
+                <div class="flex items-center gap-2">
+                  <label class="cursor-pointer inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition-all">
+                    <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-600"></i>
+                    <span>+ Upload New Version (.html)</span>
+                    <input type="file" accept=".html" class="hidden" onchange="uploadDirectNewVersion('${t.id}', '${t.slug}', event)">
+                  </label>
+                </div>
+              </div>
+
+              <!-- Expandable Versions List Accordion -->
+              <div id="versions-box-${t.id}" class="hidden mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Version History (Max 3 kept)</div>
+                ${versions.length === 0 ? `
+                  <div class="flex items-center justify-between py-1.5 px-2 bg-white rounded-lg border border-slate-200 text-xs">
+                    <span class="font-mono font-bold text-slate-700">v1 (Current Live)</span>
+                    <span class="text-[11px] font-bold text-emerald-600">ACTIVE</span>
+                  </div>
+                ` : versions.map(v => {
+                  const isCurrent = v.file_url === t.file_url;
+                  const dateStr = new Date(v.created_at).toLocaleDateString();
+                  return `
+                    <div class="flex items-center justify-between py-1.5 px-3 bg-white rounded-lg border ${isCurrent ? 'border-blue-400 bg-blue-50/30' : 'border-slate-200'} text-xs">
+                      <div class="flex items-center gap-2">
+                        <span class="font-mono font-bold ${isCurrent ? 'text-blue-700' : 'text-slate-800'}">v${v.version_number}</span>
+                        <span class="text-[11px] text-slate-400 font-mono">(${dateStr})</span>
+                        ${isCurrent ? '<span class="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.2 rounded font-bold">LIVE NOW</span>' : ''}
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <a href="${v.file_url}" target="_blank" class="text-[11px] text-slate-500 hover:underline">Preview</a>
+                        ${!isCurrent ? `
+                          <button onclick="makeVersionLive('${t.id}', '${v.id}', '${v.file_url}', '${v.storage_path}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold shadow-xs">
+                            ⚡ Make Live
+                          </button>
+                        ` : ''}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
             </div>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded ${t.is_link_shared ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}">
-              ${t.is_link_shared ? 'LINK ACTIVE' : 'PRIVATE'}
-            </span>
-          </div>
-          <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
-            <a href="/tool/${t.slug}" target="_blank" class="text-xs font-bold text-blue-600">Launch ↗</a>
-            <div class="flex gap-1.5">
-              <button onclick="openEditorForTool('${t.id}')" class="px-2 py-1 bg-slate-100 rounded text-[11px] font-semibold">✏️ Code</button>
-              <button onclick="toggleLinkShare('${t.id}', ${!t.is_link_shared})" class="px-2 py-1 bg-slate-100 rounded text-[11px] font-semibold">${t.is_link_shared ? 'Revoke' : 'Share'}</button>
-              <button onclick="togglePin('${t.id}', ${!t.is_pinned})" class="px-2 py-1 bg-slate-100 rounded text-[11px] font-semibold">${t.is_pinned ? 'Unpin' : '📌 Pin'}</button>
-              <button onclick="deleteToolPermanently('${t.id}', '${t.storage_path}')" class="px-2 py-1 bg-red-50 text-red-600 rounded text-[11px] font-semibold">✕</button>
+          `;
+        }).join('');
+      }
+
+      // Shared Tools Grid
+      const sharedGrid = document.getElementById('sharedToolsGrid');
+      if (sharedTools.length === 0) {
+        sharedGrid.innerHTML = '<p class="text-xs text-slate-400 py-3">Koi tool share nahi hua hai.</p>';
+      } else {
+        sharedGrid.innerHTML = sharedTools.map(t => `
+          <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+            <h4 class="text-xs font-bold text-slate-900">${t.title}</h4>
+            <div class="text-[10px] text-slate-500 font-mono mt-0.5">Shared Tool • /tool/${t.slug}</div>
+            <div class="mt-3 pt-3 border-t border-slate-100 flex justify-between">
+              <a href="/tool/${t.slug}" target="_blank" class="text-xs font-bold text-blue-600 hover:underline">Launch ↗</a>
             </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
+
+      lucide.createIcons();
     }
 
-    // ================= DUAL STORAGE + DB DELETE =================
-    async function deleteToolPermanently(id, storagePath) {
-      if (!confirm('Kya aap is tool ko permanently delete karna chahte hain? Storage bucket se bhi file remove ho jayegi.')) return;
+    // Toggle Versions Accordion
+    function toggleVersionsDropdown(toolId) {
+      const box = document.getElementById(`versions-box-${toolId}`);
+      const chevron = document.getElementById(`chevron-${toolId}`);
+      if (box) {
+        box.classList.toggle('hidden');
+        if (chevron) chevron.classList.toggle('rotate-180');
+      }
+    }
 
-      // 1. Delete all versions from Storage bucket
+    // Toggle Version to Make Live
+    async function makeVersionLive(toolId, versionId, fileUrl, storagePath) {
+      const { error } = await sb.from('tools').update({
+        file_url: fileUrl,
+        storage_path: storagePath,
+        last_accessed_at: new Date().toISOString()
+      }).eq('id', toolId);
+
+      if (error) {
+        alert('Live toggle failed: ' + error.message);
+        return;
+      }
+      loadData();
+    }
+
+    // In-card Direct File Upload New Version
+    async function uploadDirectNewVersion(toolId, slug, event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const timestamp = Date.now();
+      const storagePath = `${currentUser.id}/${slug}-${timestamp}.html`;
+
+      // Upload file
+      const { error: upErr } = await sb.storage.from('tools-vault').upload(storagePath, file, { contentType: 'text/html' });
+      if (upErr) {
+        alert('Upload failed: ' + upErr.message);
+        return;
+      }
+
+      const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(storagePath);
+
+      // Check existing versions & keep max 3
+      const { data: existingVers } = await sb.from('tool_versions')
+        .select('*')
+        .eq('tool_id', toolId)
+        .order('version_number', { ascending: true });
+
+      if (existingVers && existingVers.length >= 3) {
+        const oldest = existingVers[0];
+        await sb.storage.from('tools-vault').remove([oldest.storage_path]);
+        await sb.from('tool_versions').delete().eq('id', oldest.id);
+      }
+
+      const nextVerNum = (existingVers && existingVers.length > 0) ? (existingVers[existingVers.length - 1].version_number + 1) : 2;
+
+      // Insert new version
+      await sb.from('tool_versions').insert([{
+        tool_id: toolId,
+        version_number: nextVerNum,
+        file_url: publicUrl,
+        storage_path: storagePath
+      }]);
+
+      // Automatically make this new version the live tool
+      await sb.from('tools').update({
+        file_url: publicUrl,
+        storage_path: storagePath,
+        last_accessed_at: new Date().toISOString()
+      }).eq('id', toolId);
+
+      alert(`Version ${nextVerNum} successfully uploaded aur live set ho gaya!`);
+      loadData();
+    }
+
+    // Delete tool permanently (from DB + Storage)
+    async function deleteToolPermanently(id, storagePath) {
+      if (!confirm('Kya aap is tool ko permanently delete karna chahte hain? Storage bucket se bhi files delete ho jayengi.')) return;
+
       const { data: vers } = await sb.from('tool_versions').select('storage_path').eq('tool_id', id);
       const pathsToDelete = (vers || []).map(v => v.storage_path).filter(Boolean);
       if (storagePath) pathsToDelete.push(storagePath);
@@ -355,13 +524,10 @@
         await sb.storage.from('tools-vault').remove(pathsToDelete);
       }
 
-      // 2. Delete from Database
       await sb.from('tools').delete().eq('id', id);
-
       loadData();
     }
 
-    // Code Editor
     function openCurrentToolEditor() { openCodeEditor(top10Tools[activeToolIndex]); }
     function openEditorForTool(toolId) { openCodeEditor(myTools.find(t => t.id === toolId)); }
 
