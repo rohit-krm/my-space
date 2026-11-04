@@ -82,7 +82,8 @@
       <a href="/user" class="btn-login" style="background:#0f172a;">Go to Workspace</a>
     </div>
 
-    <iframe id="toolFrame" style="display:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-modals"></iframe>
+    <!-- Isolated Opaque Sandbox (No allow-same-origin) -->
+    <iframe id="toolFrame" style="display:none;" sandbox="allow-scripts allow-forms allow-downloads allow-modals"></iframe>
   </main>
 
   <script>
@@ -119,7 +120,6 @@
         .single();
 
       if (error || !tool) {
-        // Agar database se record nahi milta aur user logged out hai to authentication maangein
         if (!currentUser) {
           document.getElementById('loaderSlot').style.display = 'none';
           document.getElementById('authGateSlot').style.display = 'flex';
@@ -134,15 +134,12 @@
       const isOwner = currentUser && (tool.user_id === currentUser.id);
       const isFeatured = tool.is_featured_home && tool.approval_status === 'approved';
 
-      // Agar tool featured nahi hai aur user owner nahi hai
       if (!isOwner && !isFeatured) {
-        // Logged out user ko login screen dikhayein
         if (!currentUser) {
           document.getElementById('loaderSlot').style.display = 'none';
           document.getElementById('authGateSlot').style.display = 'flex';
           return;
         }
-        // Agar link sharing band hai to access deny karein
         if (!tool.is_link_shared) {
           document.getElementById('loaderSlot').style.display = 'none';
           document.getElementById('deniedSlot').style.display = 'flex';
@@ -150,7 +147,7 @@
         }
       }
 
-      // 3. Auto-save tool to user's shelf if opened via shared link
+      // 3. Auto-save tool to user's shelf
       if (currentUser && !isOwner && tool.is_link_shared) {
         sb.from('tool_shares').insert([{
           tool_id: tool.id,
@@ -165,13 +162,12 @@
 
       const frame = document.getElementById('toolFrame');
       try {
-        const res = await fetch(tool.file_url);
+        const res = await fetch(tool.file_url + '?t=' + Date.now());
         if (!res.ok) throw new Error('File fetch error');
         frame.srcdoc = await res.text();
         frame.style.display = 'block';
         document.getElementById('loaderSlot').style.display = 'none';
 
-        // Increment count
         sb.rpc('increment_tool_view', { tool_slug: targetSlug }).catch(() => {});
       } catch (e) {
         showError('Tool file load nahi ho saki.');
