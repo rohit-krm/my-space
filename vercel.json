@@ -2,6 +2,8 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/tool/:slug*", "destination": "/tool" }
+    { "source": "/tool/:slug*", "destination": "/tool" },
+    { "source": "/user", "destination": "/user.html" },
+    { "source": "/admin", "destination": "/admin.html" }
   ]
 }
