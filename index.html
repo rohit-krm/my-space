@@ -36,19 +36,35 @@
     async function loadTools() {
       const grid = document.getElementById('toolGrid');
       
+      // 1. Agar Cache me pehle se tools hain, turant render karo (0ms latency)
+      const cachedData = localStorage.getItem('my_cached_tools');
+      if (cachedData) {
+        const cachedTools = JSON.parse(cachedData);
+        renderCards(cachedTools);
+      }
+    
+      // 2. Background me silently fresh data fetch karo
       const { data: tools, error } = await sb
         .from('tools')
         .select('*')
         .eq('is_public', true)
         .order('sort_order', { ascending: true });
-
-      if (error || !tools || tools.length === 0) {
+    
+      if (!error && tools) {
+        // Cache update kar do future ke liye
+        localStorage.setItem('my_cached_tools', JSON.stringify(tools));
+        renderCards(tools);
+      } else if (!cachedData) {
         grid.innerHTML = '<p style="color:var(--text-muted); text-align:center;">अभी कोई टूल लाइव नहीं है। Admin से अपलोड करें।</p>';
-        return;
       }
-
+    }
+    
+    function renderCards(tools) {
+      const grid = document.getElementById('toolGrid');
+      if (!tools || tools.length === 0) return;
+    
       grid.innerHTML = tools.map(tool => `
-        <a href="/tool?id=${encodeURIComponent(tool.slug)}" class="tool-card">
+        <a href="/tool/${encodeURIComponent(tool.slug)}" class="tool-card">
           <div class="tool-info">
             <h3>${tool.title}</h3>
             <p>${tool.description || ''}</p>
