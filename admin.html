@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/js/supabase-config.js"></script>
+  <style>
+    .form-card {
+      background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.25rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .input-group { margin-bottom: 1rem; }
+    .input-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; }
+    .input-group input, .input-group textarea {
+      width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none;
+    }
+    .btn {
+      width: 100%; padding: 0.85rem; border: none; border-radius: 8px; background: var(--accent);
+      color: #fff; font-weight: 600; cursor: pointer;
+    }
+    .btn-secondary { background: #f1f5f9; color: var(--text-main); margin-top: 0.5rem; }
+    .tool-manage-item {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #fff; border: 1px solid var(--border); border-radius: 12px;
+      padding: 0.85rem 1rem; margin-bottom: 0.75rem;
+    }
+    .order-btns button {
+      border: 1px solid var(--border); background: #f8fafc; padding: 0.3rem 0.6rem;
+      border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <div id="authView">
+      <header>
+        <h1>Admin Login</h1>
+        <p>प्लेटफ़ॉर्म मैनेज करने के लिए लॉगिन करें</p>
+      </header>
+      <div class="form-card">
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="you@gmail.com">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="••••••••">
+        </div>
+        <button class="btn" onclick="login()">Login</button>
+      </div>
+    </div>
+
+    <div id="adminView" style="display:none;">
+      <header style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h1>Tool Manager</h1>
+          <p>नया टूल जोड़ें और क्रम बदलें</p>
+        </div>
+        <button class="btn-secondary" style="padding:0.4rem 0.8rem; border-radius:8px; border:1px solid var(--border); cursor:pointer;" onclick="logout()">Logout</button>
+      </header>
+
+      <!-- New Tool Upload Form -->
+      <div class="form-card">
+        <h3 style="margin-bottom:1rem; font-size:1.1rem;">+ Upload New HTML Tool</h3>
+        <div class="input-group">
+          <label>Tool Title</label>
+          <input type="text" id="toolTitle" placeholder="e.g. QuickBeam Share">
+        </div>
+        <div class="input-group">
+          <label>URL Slug (English, no spaces)</label>
+          <input type="text" id="toolSlug" placeholder="e.g. quick-beam">
+        </div>
+        <div class="input-group">
+          <label>Description</label>
+          <input type="text" id="toolDesc" placeholder="e.g. Instant P2P file share">
+        </div>
+        <div class="input-group">
+          <label>Badge</label>
+          <input type="text" id="toolBadge" placeholder="e.g. P2P, AI, Code">
+        </div>
+        <div class="input-group">
+          <label>Select Tool HTML File</label>
+          <input type="file" id="toolFile" accept=".html">
+        </div>
+        <button class="btn" id="uploadBtn" onclick="uploadTool()">Publish Tool Instantly</button>
+      </div>
+
+      <h3 style="margin-bottom:1rem; font-size:1.1rem;">Live Tools Ordering</h3>
+      <div id="toolsList"></div>
+    </div>
+  </main>
+
+  <script>
+    async function checkAuth() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        document.getElementById('authView').style.display = 'none';
+        document.getElementById('adminView').style.display = 'block';
+        loadAdminTools();
+      } else {
+        document.getElementById('authView').style.display = 'block';
+        document.getElementById('adminView').style.display = 'none';
+      }
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) alert(error.message);
+      else checkAuth();
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      checkAuth();
+    }
+
+    async function uploadTool() {
+      const title = document.getElementById('toolTitle').value.trim();
+      const slug = document.getElementById('toolSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      const desc = document.getElementById('toolDesc').value.trim();
+      const badge = document.getElementById('toolBadge').value.trim();
+      const file = document.getElementById('toolFile').files[0];
+
+      if (!title || !slug || !file) {
+        alert('Title, Slug और File तीनों ज़रूरी हैं!');
+        return;
+      }
+
+      const btn = document.getElementById('uploadBtn');
+      btn.innerText = 'Uploading...';
+      btn.disabled = true;
+
+      try {
+        // 1. Supabase Storage में फाइल अपलोड करें
+        const filePath = `${slug}-${Date.now()}.html`;
+        const { error: storageErr } = await sb.storage.from('tools-vault').upload(filePath, file);
+        if (storageErr) throw storageErr;
+
+        const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(filePath);
+
+        // 2. Database में रिकॉर्ड इन्सर्ट करें
+        const { error: dbErr } = await sb.from('tools').insert([{
+          title, slug, description: desc, badge: badge || 'Tool', file_url: publicUrl, sort_order: Date.now()
+        }]);
+
+        if (dbErr) throw dbErr;
+
+        alert('टूल लाइव हो गया!');
+        location.reload();
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        btn.innerText = 'Publish Tool Instantly';
+        btn.disabled = false;
+      }
+    }
+
+    async function loadAdminTools() {
+      const list = document.getElementById('toolsList');
+      const { data: tools } = await sb.from('tools').select('*').order('sort_order', { ascending: true });
+
+      if (!tools || tools.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-muted);">कोई टूल नहीं मिला।</p>';
+        return;
+      }
+
+      list.innerHTML = tools.map((t, idx) => `
+        <div class="tool-manage-item">
+          <div>
+            <strong>${t.title}</strong>
+            <div style="font-size:0.8rem; color:var(--text-muted);">${t.slug}</div>
+          </div>
+          <div class="order-btns">
+            <button onclick="moveOrder('${t.id}', -1)" ${idx === 0 ? 'disabled' : ''}>▲</button>
+            <button onclick="moveOrder('${t.id}', 1)" ${idx === tools.length - 1 ? 'disabled' : ''}>▼</button>
+            <button onclick="deleteTool('${t.id}')" style="color:red; margin-left:8px;">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function moveOrder(id, delta) {
+      const { data: tools } = await sb.from('tools').select('*').order('sort_order', { ascending: true });
+      const index = tools.findIndex(t => t.id === id);
+      if (index < 0) return;
+
+      const targetIndex = index + delta;
+      if (targetIndex < 0 || targetIndex >= tools.length) return;
+
+      const currentTool = tools[index];
+      const targetTool = tools[targetIndex];
+
+      // Swap sort_order
+      await sb.from('tools').update({ sort_order: targetTool.sort_order }).eq('id', currentTool.id);
+      await sb.from('tools').update({ sort_order: currentTool.sort_order }).eq('id', targetTool.id);
+
+      loadAdminTools();
+    }
+
+    async function deleteTool(id) {
+      if (!confirm('क्या आप वाकई इस टूल को हटाना चाहते हैं?')) return;
+      await sb.from('tools').delete().eq('id', id);
+      loadAdminTools();
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
