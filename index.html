@@ -2,209 +2,302 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Tools Hub - Personal Productivity Platform</title>
-  <link rel="stylesheet" href="/assets/css/global.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolsHub — Personal Micro-Tools Hub</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS Client & Config -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-config.js"></script>
-  <style>
-    body {
-      background: #fbfbfd;
-      color: #0f172a;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      margin: 0;
-    }
 
-    /* Top Navigation Bar */
-    .landing-nav {
-      max-width: 1024px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-sizing: border-box;
-    }
-
-    .brand-logo {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      color: #0f172a;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .brand-dot {
-      width: 8px;
-      height: 8px;
-      background: #2563eb;
-      border-radius: 50%;
-    }
-
-    .nav-login-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #0f172a;
-      color: #ffffff;
-      padding: 7px 16px;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: background 0.15s ease;
-    }
-    .nav-login-btn:hover {
-      background: #1e293b;
-    }
-
-    /* Hero Section */
-    .hero-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 3rem 1.5rem 5rem;
-      max-width: 720px;
-      margin: 0 auto;
-      box-sizing: border-box;
-    }
-
-    .pill-badge {
-      display: inline-flex;
-      align-items: center;
-      background: #eff6ff;
-      border: 1px solid #dbeafe;
-      color: #2563eb;
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 99px;
-      margin-bottom: 1.5rem;
-    }
-
-    .hero-title {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 800;
-      line-height: 1.15;
-      letter-spacing: -0.04em;
-      margin-bottom: 1.25rem;
-      color: #0f172a;
-    }
-
-    .hero-sub {
-      font-size: clamp(1rem, 2.5vw, 1.12rem);
-      line-height: 1.6;
-      color: #64748b;
-      margin-bottom: 2.25rem;
-      max-width: 540px;
-    }
-
-    .cta-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: #2563eb;
-      color: #ffffff;
-      padding: 12px 28px;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      text-decoration: none;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
-      transition: transform 0.15s ease, background 0.15s ease;
-    }
-    .cta-button:active {
-      transform: scale(0.98);
-    }
-
-    /* Minimal Feature Cards */
-    .features-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-      width: 100%;
-      margin-top: 3.5rem;
-      text-align: left;
-    }
-    @media (min-width: 640px) {
-      .features-grid {
-        grid-template-columns: repeat(3, 1fr);
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
       }
     }
+  </script>
 
-    .feat-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 1.25rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  <style>
+    body {
+      background: #fafafc;
+      color: #090d16;
     }
-    .feat-card h4 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 4px;
+    .glow-radial {
+      background: radial-gradient(circle at 50% 15%, rgba(37, 99, 235, 0.08) 0%, transparent 60%);
     }
-    .feat-card p {
-      font-size: 0.82rem;
-      color: #64748b;
-      line-height: 1.5;
+    .tab-active {
+      background-color: #eff6ff !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
     }
   </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
 
-  <nav class="landing-nav">
-    <a href="/" class="brand-logo">
-      <div class="brand-dot"></div>
-      Tools Hub
+  <!-- ================= HEADER ================= -->
+  <header class="w-full max-w-5xl mx-auto px-5 py-5 sm:py-6 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-md shadow-blue-500/20">
+        <i data-lucide="blocks" class="w-4 h-4"></i>
+      </div>
+      <span class="font-extrabold text-lg tracking-tight text-slate-900">
+        ToolsHub<span class="text-blue-600">.</span>
+      </span>
     </a>
-    <a href="/user" class="nav-login-btn" id="navBtn">Login →</a>
-  </nav>
 
-  <main class="hero-container">
-    <div class="pill-badge">Next-Gen Micro-Tool Workspace</div>
-    <h1 class="hero-title">Aapke sabhi custom web tools, ek jagah.</h1>
-    <p class="hero-sub">Single-file HTML, WebAssembly aur P2P utilities ko bina kisi hassle ke run aur pin karein. Secure, private aur ultra-fast.</p>
+    <!-- Clean Login / Dashboard CTA -->
+    <a href="/user" id="navBtn" class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold bg-slate-950 text-white hover:bg-slate-800 px-4 py-2 rounded-xl transition-all shadow-sm">
+      <span>Login</span>
+      <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+    </a>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <main class="flex-1 w-full max-w-4xl mx-auto px-5 pt-6 sm:pt-10 pb-16 flex flex-col items-center text-center glow-radial">
     
-    <a href="/user" class="cta-button" id="ctaBtn">
-      Start Using Tools →
-    </a>
-
-    <div class="features-grid">
-      <div class="feat-card">
-        <h4>⚡ Ultra Fast</h4>
-        <p>Client-side sandboxed architecture bina kisi server delay ke instant chalta hai.</p>
-      </div>
-      <div class="feat-card">
-        <h4>🔒 Safe Sandbox</h4>
-        <p>Aapke tools securely isolated iframe me run hote hain.</p>
-      </div>
-      <div class="feat-card">
-        <h4>📌 Custom Pinning</h4>
-        <p>Apne daily most-used top 3 tools ko home dashboard par pin karke rakhein.</p>
-      </div>
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/70 text-blue-700 text-xs font-semibold mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+      Single-File HTML & AI Utilities Workspace
     </div>
+
+    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-950 max-w-2xl leading-[1.15]">
+      AI se bane apne tools <br class="hidden sm:inline" />
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">ek jagah save aur pin karein.</span>
+    </h1>
+
+    <p class="mt-4 text-sm sm:text-base text-slate-600 max-w-lg leading-relaxed">
+      Single-page HTML tools ko sandbox me run karein aur daily use hone wale tools ko screen par pin karke direct chalayein.
+    </p>
+
+    <!-- CTAs -->
+    <div class="mt-7 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+      <a href="/user" id="ctaBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-7 py-3 rounded-xl shadow-lg shadow-blue-600/25 transition-all">
+        <span>Apna Workspace Kholein</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </a>
+      <a href="#how" class="w-full sm:w-auto text-xs font-semibold text-slate-600 hover:text-slate-900 px-4 py-2.5">
+        Ye kaise kaam karta hai? ↓
+      </a>
+    </div>
+
+    <!-- ================= DYNAMIC TOOL DOCK & RUNNER ================= -->
+    <div class="mt-12 w-full rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60 p-4 sm:p-5 text-left">
+      
+      <!-- Dock Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3.5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="pin" class="w-4 h-4 fill-amber-500 text-amber-500"></i>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Top Featured Tools</span>
+        </div>
+        <span class="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-mono">1-tap instant switch</span>
+      </div>
+
+      <!-- Tool Tabs Grid -->
+      <div id="toolsTabContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div class="p-3 text-xs text-slate-400 font-mono col-span-full text-center">Tools load ho rahe hain...</div>
+      </div>
+
+      <!-- Live Inline Sandbox Preview Frame -->
+      <div class="mt-5 pt-4 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Interactive Workspace
+          </span>
+          <div class="flex items-center gap-3">
+            <span id="activeToolTitle" class="text-xs font-bold text-blue-600 font-mono">QuickBeam</span>
+            <a id="fullscreenLink" href="/tool/quick-beam" target="_blank" class="text-xs font-bold text-slate-700 hover:text-blue-600 inline-flex items-center gap-1 transition-colors">
+              <span>Fullscreen ↗</span>
+            </a>
+          </div>
+        </div>
+        
+        <div class="w-full h-80 sm:h-96 rounded-xl bg-slate-50 border border-slate-200 overflow-hidden relative shadow-inner">
+          <iframe id="toolRunnerFrame" class="w-full h-full border-0" sandbox="allow-scripts allow-forms allow-same-origin allow-downloads" title="Live Tool Canvas"></iframe>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= 3 STEPS ================= -->
+    <section id="how" class="mt-16 w-full text-left">
+      <h2 class="text-center text-xs font-bold uppercase tracking-wider text-slate-400 mb-8">
+        Ye kaise kaam karta hai
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200">
+          <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs mb-3">1</div>
+          <h3 class="text-sm font-bold text-slate-900">AI se Tool Banao</h3>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            ChatGPT ya Claude se single-file HTML web utility generate karwayein.
+          </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200">
+          <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs mb-3">2</div>
+          <h3 class="text-sm font-bold text-slate-900">Upload & Save</h3>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Apne account me direct `.html` file upload karein. Sab isolated storage me safe rahega.
+          </p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200">
+          <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs mb-3">3</div>
+          <h3 class="text-sm font-bold text-slate-900">Pin to Top</h3>
+          <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Apne top 3 daily utilities ko shelf par pin karein aur 1 click me use karein.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= BOTTOM CTA ================= -->
+    <div class="mt-14 w-full bg-slate-900 text-white rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="text-left">
+        <h3 class="text-base sm:text-lg font-bold">Apne daily tools organize karein</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Free personal workspace • No server setup</p>
+      </div>
+      <a href="/user" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shrink-0 transition-colors">
+        <span>Get Started</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </a>
+    </div>
+
   </main>
 
+  <!-- ================= FOOTER ================= -->
+  <footer class="w-full max-w-5xl mx-auto px-5 py-6 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
+    <span>ToolsHub © 2026</span>
+    <a href="/user" class="hover:text-slate-900 font-medium">User Login →</a>
+  </footer>
+
+  <!-- ================= CLIENT LOGIC ================= -->
   <script>
-    // Agar user pehle se logged in hai toh button text adjust karein
+    lucide.createIcons();
+    let loadedTools = [];
+
+    // Session detection
     async function checkSession() {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) {
-        document.getElementById('navBtn').innerText = 'My Tools →';
-        document.getElementById('ctaBtn').innerText = 'Go to My Tools →';
+      try {
+        if (typeof sb !== 'undefined' && sb && sb.auth) {
+          const { data: { session } } = await sb.auth.getSession();
+          if (session) {
+            const navBtn = document.getElementById('navBtn');
+            const ctaBtn = document.getElementById('ctaBtn');
+            if (navBtn) navBtn.innerHTML = '<span>My Tools →</span>';
+            if (ctaBtn) ctaBtn.innerHTML = '<span>Go to My Tools Dashboard</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
+            lucide.createIcons();
+          }
+        }
+      } catch (err) {
+        console.warn('Session note:', err);
       }
     }
+
+    // Live Tools fetch & Tab mounting
+    async function initShowcase() {
+      const container = document.getElementById('toolsTabContainer');
+      
+      try {
+        const { data: tools, error } = await sb
+          .from('tools')
+          .select('*')
+          .eq('is_public', true)
+          .eq('approval_status', 'approved')
+          .order('is_pinned', { ascending: false })
+          .order('sort_order', { ascending: true })
+          .limit(3);
+
+        if (!error && tools && tools.length > 0) {
+          loadedTools = tools;
+          renderTabs(tools);
+          switchTool(0);
+          return;
+        }
+      } catch (e) {
+        console.warn('Supabase fetch fallback:', e);
+      }
+
+      // Default safe fallback if database has 0 public tools
+      loadedTools = [
+        {
+          title: 'QuickBeam Share',
+          slug: 'quick-beam',
+          badge: 'P2P',
+          description: 'Instant file and message sync',
+          file_url: null,
+          inline_html: `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-6 bg-white font-sans text-center flex flex-col items-center justify-center min-h-[220px]"><div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2 font-bold text-lg">⚡</div><h3 class="font-bold text-slate-800 text-sm">QuickBeam Live Sandbox</h3><p class="text-xs text-slate-500 mt-1 max-w-xs">P2P sync ready. Apne account me login karke customize karein.</p><a href="/user" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-sm">Open in Portal ↗</a></body></html>`
+        }
+      ];
+      renderTabs(loadedTools);
+      switchTool(0);
+    }
+
+    function renderTabs(tools) {
+      const container = document.getElementById('toolsTabContainer');
+      container.innerHTML = tools.map((t, idx) => `
+        <button id="tool-tab-${idx}" onclick="switchTool(${idx})" class="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between text-left transition-all">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+              <i data-lucide="${t.badge === 'P2P' ? 'zap' : 'wrench'}" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-slate-900 truncate">${t.title}</div>
+              <div class="text-[10px] text-slate-500 truncate">${t.description || '/tool/' + t.slug}</div>
+            </div>
+          </div>
+          <i data-lucide="pin" class="w-3.5 h-3.5 fill-amber-500 text-amber-500 shrink-0 ml-1"></i>
+        </button>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    async function switchTool(index) {
+      const tool = loadedTools[index];
+      if (!tool) return;
+
+      // Active state highlight
+      document.querySelectorAll('#toolsTabContainer button').forEach((btn, i) => {
+        if (i === index) btn.classList.add('tab-active');
+        else btn.classList.remove('tab-active');
+      });
+
+      // Update titles & links
+      document.getElementById('activeToolTitle').innerText = tool.title;
+      const fsLink = document.getElementById('fullscreenLink');
+      fsLink.href = `/tool/${tool.slug}`;
+
+      const frame = document.getElementById('toolRunnerFrame');
+
+      // Direct file fetch if storage URL exists
+      if (tool.file_url) {
+        try {
+          const res = await fetch(tool.file_url);
+          frame.srcdoc = await res.text();
+        } catch (err) {
+          frame.srcdoc = `<div style="font-family:sans-serif;padding:20px;color:#ef4444;font-size:13px;">File load karne me dikkat hui.</div>`;
+        }
+      } else if (tool.inline_html) {
+        frame.srcdoc = tool.inline_html;
+      }
+    }
+
     checkSession();
+    initShowcase();
   </script>
 </body>
 </html>
