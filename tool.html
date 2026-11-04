@@ -152,7 +152,7 @@
 
       // 3. Auto-save tool to user's shelf if opened via shared link
       if (currentUser && !isOwner && tool.is_link_shared) {
-        sb.from('user_saved_tools').insert([{
+        sb.from('tool_shares').insert([{
           tool_id: tool.id,
           user_id: currentUser.id
         }]).then(() => {}).catch(() => {});
