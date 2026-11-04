@@ -364,6 +364,7 @@
       if (!tool) return;
       activeToolIndex = idx;
 
+      // Active tab visual highlight
       document.querySelectorAll('#dashTabsContainer button').forEach((btn, i) => {
         btn.classList.toggle('tab-active', i === idx);
       });
@@ -373,20 +374,44 @@
 
       // Only creator can edit code
       const editBtn = document.getElementById('dashEditCodeBtn');
-      if (tool.user_id === currentUser.id) {
-        editBtn.classList.remove('hidden');
-      } else {
-        editBtn.classList.add('hidden');
+      if (editBtn) {
+        if (tool.user_id === currentUser.id) {
+          editBtn.classList.remove('hidden');
+        } else {
+          editBtn.classList.add('hidden');
+        }
       }
 
       const frame = document.getElementById('dashFrame');
+      
+      // Direct reliable fetch
       try {
-        const res = await fetch(tool.file_url);
-        frame.srcdoc = await res.text();
-        // Update access timestamp non-blocking
-        sb.rpc('increment_tool_view', { tool_slug: tool.slug }).catch(() => {});
+        const fetchUrl = tool.file_url ? (tool.file_url + '?t=' + Date.now()) : null;
+        if (!fetchUrl) throw new Error("No URL");
+
+        const res = await fetch(fetchUrl);
+        if (!res.ok) throw new Error("Fetch failed with status " + res.status);
+        
+        const htmlText = await res.text();
+        frame.srcdoc = htmlText;
+
+        // Background non-blocking analytics update (isolated)
+        setTimeout(() => {
+          try {
+            if (typeof sb !== 'undefined' && sb && sb.rpc) {
+              sb.rpc('increment_tool_view', { tool_slug: tool.slug }).then(() => {}).catch(() => {});
+            }
+          } catch(e) {}
+        }, 1000);
+
       } catch (err) {
-        frame.srcdoc = '<p style="padding:20px;font-family:sans-serif;color:red;">File load error</p>';
+        console.error("Tool load error detail:", err);
+        // Fallback: Agar fetch block ho to direct iframe src laga do
+        if (tool.file_url) {
+          frame.src = tool.file_url;
+        } else {
+          frame.srcdoc = '<p style="padding:20px;font-family:sans-serif;color:#ef4444;font-size:13px;">File load nahi ho saki. Kripya reload karein.</p>';
+        }
       }
     }
 
