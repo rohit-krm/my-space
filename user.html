@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Creator Portal - My Tools</title>
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/js/supabase-config.js"></script>
+  <style>
+    body { background: #f8fafc; padding: 2rem 1.25rem 4rem; display: block; }
+    .container { max-width: 860px; margin: 0 auto; }
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .surface-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem; }
+    .tool-grid-creator { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 640px) { .tool-grid-creator { grid-template-columns: repeat(2, 1fr); } }
+    .tool-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; position: relative; }
+    .tool-box.pinned { border-color: #93c5fd; background: #fbfdff; }
+    .btn-pill { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+    .btn-outline { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 0.78rem; cursor: pointer; }
+    .pin-badge { font-size: 0.72rem; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 7px; border-radius: 6px; }
+    .status-badge { font-size: 0.72rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; }
+    .badge-approved { background: #dcfce7; color: #166534; }
+    .badge-draft { background: #f1f5f9; color: #475569; }
+    .badge-pending { background: #fef9c3; color: #854d0e; }
+    .input-field { margin-bottom: 0.85rem; }
+    .input-field label { display: block; font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+    .input-field input { width: 100%; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <!-- Unauthenticated View -->
+    <div id="loggedOutView" style="display:none; text-align:center; padding: 4rem 1rem;">
+      <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Creator Workspace</h1>
+      <p style="color:#64748b; margin-bottom: 1.5rem;">Apne custom HTML tools deploy karein aur run karein</p>
+      <button class="btn-pill" style="padding: 10px 22px; font-size:1rem;" onclick="loginWithGoogle()">
+        Sign in with Google
+      </button>
+    </div>
+
+    <!-- Authenticated View -->
+    <div id="loggedInView" style="display:none;">
+      <header class="dashboard-header">
+        <div>
+          <h1 style="font-size: 1.4rem;">My Workspace</h1>
+          <p id="userEmailTag" style="font-size:0.85rem; color:#64748b;"></p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-pill" onclick="toggleUploadForm()">+ New Tool</button>
+          <button class="btn-outline" onclick="logout()">Logout</button>
+        </div>
+      </header>
+
+      <!-- Account Status Notice -->
+      <div id="accountNotice" style="display:none;" class="surface-card"></div>
+
+      <!-- Add Tool Form -->
+      <div id="uploadModal" class="surface-card" style="display:none;">
+        <h3 style="margin-bottom:12px; font-size:1rem;">Upload HTML Tool</h3>
+        <div class="input-field"><label>Title</label><input type="text" id="tTitle" placeholder="e.g. JSON Parser"></div>
+        <div class="input-field"><label>Slug (URL name)</label><input type="text" id="tSlug" placeholder="e.g. json-parser"></div>
+        <div class="input-field"><label>Description</label><input type="text" id="tDesc" placeholder="Short description"></div>
+        <div class="input-field"><label>Badge</label><input type="text" id="tBadge" placeholder="AI, Code, Utility"></div>
+        <div class="input-field"><label>HTML File</label><input type="file" id="tFile" accept=".html"></div>
+        <div class="input-field" id="publicOptRow" style="display:none;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="checkbox" id="tIsPublic" style="width:auto;"> Request to Publish in Public Showcase
+          </label>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+          <button class="btn-pill" id="uploadBtn" onclick="submitTool()">Upload</button>
+          <button class="btn-outline" onclick="toggleUploadForm()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Tools Section -->
+      <h3 style="font-size:1rem; margin-bottom:10px;">Your Tools</h3>
+      <div id="toolsContainer" class="tool-grid-creator"></div>
+    </div>
+  </main>
+
+  <script>
+    let currentUser = null;
+    let currentProfile = null;
+    let myTools = [];
+
+    async function loginWithGoogle() {
+      await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + '/user' }
+      });
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      window.location.reload();
+    }
+
+    async function initUserPortal() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        document.getElementById('loggedOutView').style.display = 'block';
+        return;
+      }
+
+      currentUser = session.user;
+      document.getElementById('loggedInView').style.display = 'block';
+      document.getElementById('userEmailTag').innerText = currentUser.email;
+
+      // Profile Check
+      const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+      currentProfile = profile;
+
+      if (profile && profile.can_publish_public) {
+        document.getElementById('publicOptRow').style.display = 'block';
+      }
+
+      loadMyTools();
+    }
+
+    async function loadMyTools() {
+      const { data: tools } = await sb.from('tools')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('is_pinned', { ascending: false })
+        .order('sort_order', { ascending: true });
+
+      myTools = tools || [];
+      renderTools();
+    }
+
+    function renderTools() {
+      const container = document.getElementById('toolsContainer');
+      if (myTools.length === 0) {
+        container.innerHTML = '<p style="color:#64748b; font-size:0.85rem;">Abhi koi tool nahi hai. "+ New Tool" se pehla tool dalein.</p>';
+        return;
+      }
+
+      container.innerHTML = myTools.map(t => `
+        <div class="tool-box ${t.is_pinned ? 'pinned' : ''}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <h4 style="font-size:0.95rem; font-weight:600;">${t.title}</h4>
+              <div style="font-size:0.75rem; color:#64748b; margin-top:2px;">/tool/${t.slug} • Views: ${t.view_count || 0}</div>
+            </div>
+            ${t.is_pinned ? '<span class="pin-badge">PINNED</span>' : ''}
+          </div>
+          <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+            <a href="/tool/${t.slug}" target="_blank" class="btn-outline" style="text-decoration:none; font-weight:600; color:#2563eb;">Open ↗</a>
+            <div style="display:flex; gap:6px;">
+              <button class="btn-outline" onclick="togglePin('${t.id}', ${!t.is_pinned})">${t.is_pinned ? 'Unpin' : '📌 Pin'}</button>
+              <button class="btn-outline" style="color:#ef4444;" onclick="deleteMyTool('${t.id}')">✕</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleUploadForm() {
+      const modal = document.getElementById('uploadModal');
+      modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function togglePin(toolId, makePinned) {
+      if (makePinned) {
+        const pinnedCount = myTools.filter(t => t.is_pinned).length;
+        if (pinnedCount >= 3) {
+          alert('Aap maximum 3 tools hi pin kar sakte hain.');
+          return;
+        }
+      }
+      await sb.from('tools').update({ is_pinned: makePinned }).eq('id', toolId);
+      loadMyTools();
+    }
+
+    async function submitTool() {
+      const title = document.getElementById('tTitle').value.trim();
+      const slug = document.getElementById('tSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      const desc = document.getElementById('tDesc').value.trim();
+      const badge = document.getElementById('tBadge').value.trim();
+      const file = document.getElementById('tFile').files[0];
+      const isPublic = document.getElementById('tIsPublic').checked;
+
+      if (!title || !slug || !file) {
+        alert('Title, Slug aur File required hain');
+        return;
+      }
+
+      // Read file and validate safety
+      const text = await file.text();
+      if (/document\.cookie/i.test(text) || /localStorage\.getItem\(["']sb-/i.test(text)) {
+        alert('Security Alert: Malicious access code detected. File upload rejected.');
+        return;
+      }
+
+      const filePath = `${currentUser.id}/${slug}-${Date.now()}.html`;
+      const { error: storageErr } = await sb.storage.from('tools-vault').upload(filePath, file);
+      if (storageErr) { alert(storageErr.message); return; }
+
+      const { data: { publicUrl } } = sb.storage.from('tools-vault').getPublicUrl(filePath);
+
+      const { error: dbErr } = await sb.from('tools').insert([{
+        user_id: currentUser.id,
+        title,
+        slug,
+        description: desc,
+        badge: badge || 'App',
+        file_url: publicUrl,
+        is_public: isPublic,
+        approval_status: isPublic ? 'pending_review' : 'draft',
+        sort_order: Math.floor(Date.now() / 1000)
+      }]);
+
+      if (dbErr) { alert(dbErr.message); return; }
+
+      alert(isPublic ? 'Tool upload ho gaya! Admin review ke baad public feed par aayega.' : 'Private Tool ready ho gaya!');
+      location.reload();
+    }
+
+    async function deleteMyTool(id) {
+      if (!confirm('Kya aap is tool ko delete karna chahte hain?')) return;
+      await sb.from('tools').delete().eq('id', id);
+      loadMyTools();
+    }
+
+    initUserPortal();
+  </script>
+</body>
+</html>
