@@ -209,29 +209,29 @@
     }
 
     // Live Tools fetch & Tab mounting
-    async function initShowcase() {
-      const container = document.getElementById('toolsTabContainer');
-      
-      try {
-        const { data: tools, error } = await sb
-          .from('tools')
-          .select('*')
-          .eq('is_public', true)
-          .eq('approval_status', 'approved')
-          .order('is_pinned', { ascending: false })
-          .order('sort_order', { ascending: true })
-          .limit(3);
+   async function initShowcase() {
+  const container = document.getElementById('toolsTabContainer');
+  
+  try {
+    // Sirf Admin ke featured tools fetch honge
+    const { data: tools, error } = await sb
+      .from('tools')
+      .select('*')
+      .eq('is_featured_home', true)
+      .order('is_pinned', { ascending: false })
+      .order('sort_order', { ascending: true })
+      .limit(6);
 
-        if (!error && tools && tools.length > 0) {
-          loadedTools = tools;
-          renderTabs(tools);
-          switchTool(0);
-          return;
-        }
-      } catch (e) {
-        console.warn('Supabase fetch fallback:', e);
-      }
-
+    if (!error && tools && tools.length > 0) {
+      loadedTools = tools;
+      renderTabs(tools);
+      switchTool(0);
+      return;
+    }
+  } catch (e) {
+    console.warn('Fallback active:', e);
+  }
+}
       // Default safe fallback if database has 0 public tools
       loadedTools = [
         {
