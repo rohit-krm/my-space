@@ -3,61 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Running Tool</title>
+  <title>Tool Viewer</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-config.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #fff; }
-    iframe { width: 100%; height: 100%; border: none; }
-    .loader {
-      display: flex; height: 100vh; align-items: center; justify-content: center;
-      font-family: sans-serif; color: #64748b; font-size: 1rem;
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #fbfbfd;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    /* Floating Home Button */
-    .home-floating-btn {
-      position: fixed;
-      top: 12px;
-      right: 14px;
-      z-index: 99999;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(8px);
-      border: 1px solid #e2e8f0;
-      color: #0f172a;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      text-decoration: none;
+
+    /* Ultra-Thin Header (Content Safe) */
+    .top-nav-bar {
+      height: 38px;
+      min-height: 38px;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
-      gap: 5px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      opacity: 0.65;
-      transition: opacity 0.2s ease, transform 0.15s ease;
+      justify-content: space-between;
+      padding: 0 14px;
+      z-index: 100;
     }
-    .home-floating-btn:hover, .home-floating-btn:active {
-      opacity: 1;
-      transform: scale(1.03);
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #2563eb;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #eff6ff;
+      transition: background 0.15s;
+    }
+    .home-link:active {
+      background: #dbeafe;
+    }
+
+    .tool-page-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .tool-badge-pill {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    /* Fullscreen Tool Canvas */
+    .frame-container {
+      flex: 1;
+      width: 100%;
+      height: calc(100% - 38px);
+      position: relative;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .loader {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 0.95rem;
     }
   </style>
 </head>
 <body>
 
-  <a href="/" class="home-floating-btn" title="Dashboard par wapas jayein">
-    <span>🏠</span> Home
-  </a>
+  <!-- Clean Top Bar -->
+  <header class="top-nav-bar">
+    <div class="nav-left">
+      <a href="/" class="home-link">
+        <span>←</span> Home
+      </a>
+      <span class="tool-page-title" id="barTitle">Loading...</span>
+    </div>
+    <span class="tool-badge-pill" id="barBadge">App</span>
+  </header>
 
-  <div id="loading" class="loader">टूल शुरू हो रहा है...</div>
-  <iframe id="toolFrame" style="display:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-modals"></iframe>
+  <!-- Tool Iframe Section -->
+  <main class="frame-container">
+    <div id="loading" class="loader">टूल शुरू हो रहा है...</div>
+    <iframe id="toolFrame" style="display:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-modals"></iframe>
+  </main>
 
   <script>
     async function initTool() {
-      // Dono tarike support honge: /tool/quick-beam ya /tool?id=quick-beam
+      // 1. Slug nikalna: chahe /tool/quick-beam ho ya /tool?id=quick-beam
       const pathParts = window.location.pathname.split('/').filter(Boolean);
       let slug = '';
       if (pathParts.length >= 2 && pathParts[0] === 'tool') {
-        slug = pathParts[1];
+        slug = decodeURIComponent(pathParts[1]);
       } else {
         const params = new URLSearchParams(window.location.search);
         slug = params.get('id');
@@ -68,12 +131,13 @@
         return;
       }
 
-      // Check LocalStorage cache first for ultra-fast instant render
-      const cachedTools = JSON.parse(localStorage.getItem('my_cached_tools') || '[]');
-      const cached = cachedTools.find(t => t.slug === slug);
+      // 2. Instant Local Cache Check (Zero Latency)
+      const cachedList = JSON.parse(localStorage.getItem('my_cached_tools') || '[]');
+      const cached = cachedList.find(t => t.slug === slug);
 
       let fileUrl = cached ? cached.file_url : null;
-      let title = cached ? cached.title : 'Tool';
+      let title = cached ? cached.title : slug;
+      let badge = cached ? cached.badge : 'Tool';
 
       if (!fileUrl) {
         const { data: tool, error } = await sb
@@ -88,11 +152,16 @@
         }
         fileUrl = tool.file_url;
         title = tool.title;
+        badge = tool.badge || 'Tool';
       }
 
+      // Top bar updates
       document.title = title;
+      document.getElementById('barTitle').innerText = title;
+      document.getElementById('barBadge').innerText = badge;
+
+      // Tool inject inside iframe
       const frame = document.getElementById('toolFrame');
-      
       const res = await fetch(fileUrl);
       const htmlText = await res.text();
 
