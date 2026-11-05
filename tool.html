@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tool Viewer</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-config.js"></script>
@@ -10,9 +10,9 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
       width: 100%;
-      height: 100%;
+      height: 100dvh;
       overflow: hidden;
-      background: #fbfbfd;
+      background: #0f172a;
       display: flex;
       flex-direction: column;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -26,29 +26,29 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 14px;
+      padding: 0 12px;
       z-index: 100;
     }
 
-    .nav-left { display: flex; align-items: center; gap: 12px; }
+    .nav-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
     .home-link {
-      display: inline-flex; align-items: center; gap: 5px; color: #2563eb;
-      text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 3px 8px;
-      border-radius: 6px; background: #eff6ff;
+      display: inline-flex; align-items: center; gap: 4px; color: #2563eb;
+      text-decoration: none; font-size: 0.8rem; font-weight: 700; padding: 3px 8px;
+      border-radius: 6px; background: #eff6ff; shrink: 0;
     }
-    .tool-page-title { font-size: 0.85rem; font-weight: 600; color: #0f172a; }
-    .tool-badge-pill { font-size: 0.72rem; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 12px; }
+    .tool-page-title { font-size: 0.82rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tool-badge-pill { font-size: 0.7rem; font-weight: 600; color: #64748b; background: #f1f5f9; padding: 2px 7px; border-radius: 10px; shrink: 0; }
 
-    .frame-container { flex: 1; width: 100%; height: calc(100% - 38px); position: relative; }
+    .frame-container { flex: 1; width: 100%; height: calc(100dvh - 38px); position: relative; background: #fff; }
     iframe { width: 100%; height: 100%; border: none; display: block; }
     
     .center-state {
       display: flex; flex-direction: column; height: 100%; width: 100%;
-      align-items: center; justify-content: center; padding: 20px; text-align: center;
+      align-items: center; justify-content: center; padding: 20px; text-align: center; background: #f8fafc;
     }
     .btn-login {
       margin-top: 14px; background: #2563eb; color: #fff; padding: 9px 18px;
-      border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none;
+      border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none;
     }
   </style>
 </head>
@@ -56,33 +56,31 @@
 
   <header class="top-nav-bar">
     <div class="nav-left">
-      <a href="/" class="home-link"><span>←</span> Home</a>
-      <span class="tool-page-title" id="barTitle">Loading Tool...</span>
+      <a href="/" class="home-link">← Home</a>
+      <span class="tool-page-title" id="barTitle">Loading...</span>
     </div>
     <span class="tool-badge-pill" id="barBadge">App</span>
   </header>
 
   <main class="frame-container">
     <div id="loaderSlot" class="center-state">
-      <p style="color:#64748b; font-size:0.95rem;">Tool load ho raha hai...</p>
+      <p style="color:#64748b; font-size:0.85rem;">Tool sandbox load ho raha hai...</p>
     </div>
 
-    <!-- Login Required Gatekeeper -->
     <div id="authGateSlot" class="center-state" style="display:none;">
-      <h3 style="font-size:1.15rem; color:#0f172a; margin-bottom:6px;">Login Required</h3>
-      <p style="font-size:0.85rem; color:#64748b; max-width:320px;">Is shared tool ko access karne aur apne account me save karne ke liye Google se sign in karein.</p>
+      <h3 style="font-size:1.1rem; color:#0f172a; margin-bottom:6px;">Login Required</h3>
+      <p style="font-size:0.82rem; color:#64748b; max-width:300px;">Is tool ko access aur save karne ke liye Google se sign in karein.</p>
       <button class="btn-login" onclick="loginToAccess()">Sign in with Google</button>
     </div>
 
-    <!-- Permission Denied Gatekeeper -->
     <div id="deniedSlot" class="center-state" style="display:none;">
-      <div style="font-size:2rem; margin-bottom:8px;">🔒</div>
-      <h3 style="font-size:1.15rem; color:#ef4444; margin-bottom:6px;">Access Denied</h3>
-      <p style="font-size:0.85rem; color:#64748b; max-width:340px;">You don't have necessary permission for this tool. Creator ne is tool ka public access revoke kar diya hai.</p>
+      <div style="font-size:1.8rem; margin-bottom:6px;">🔒</div>
+      <h3 style="font-size:1.05rem; color:#ef4444; margin-bottom:4px;">Access Denied</h3>
+      <p style="font-size:0.82rem; color:#64748b; max-width:320px;">Creator ne is tool ka shared access revoke kar diya hai.</p>
       <a href="/user" class="btn-login" style="background:#0f172a;">Go to Workspace</a>
     </div>
 
-    <!-- Isolated Opaque Sandbox (No allow-same-origin) -->
+    <!-- Opaque Sandboxed Frame -->
     <iframe id="toolFrame" style="display:none;" sandbox="allow-scripts allow-forms allow-downloads allow-modals"></iframe>
   </main>
 
@@ -104,33 +102,20 @@
 
     async function init() {
       targetSlug = getSlug();
-      if (!targetSlug) {
-        showError('Koi tool slug provide nahi kiya gaya.');
-        return;
-      }
+      if (!targetSlug) return showError('Tool URL invalid hai.');
 
       const { data: { session } } = await sb.auth.getSession();
       const currentUser = session ? session.user : null;
 
-      // 1. Tool metadata fetch
-      const { data: tool, error } = await sb
-        .from('tools')
-        .select('*')
-        .eq('slug', targetSlug)
-        .single();
+      const { data: tool, error } = await sb.from('tools').select('*').eq('slug', targetSlug).single();
 
       if (error || !tool) {
-        if (!currentUser) {
-          document.getElementById('loaderSlot').style.display = 'none';
-          document.getElementById('authGateSlot').style.display = 'flex';
-          return;
-        }
         document.getElementById('loaderSlot').style.display = 'none';
-        document.getElementById('deniedSlot').style.display = 'flex';
+        if (!currentUser) document.getElementById('authGateSlot').style.display = 'flex';
+        else document.getElementById('deniedSlot').style.display = 'flex';
         return;
       }
 
-      // 2. Permission Check
       const isOwner = currentUser && (tool.user_id === currentUser.id);
       const isFeatured = tool.is_featured_home && tool.approval_status === 'approved';
 
@@ -147,15 +132,10 @@
         }
       }
 
-      // 3. Auto-save tool to user's shelf
       if (currentUser && !isOwner && tool.is_link_shared) {
-        sb.from('tool_shares').insert([{
-          tool_id: tool.id,
-          user_id: currentUser.id
-        }]).then(() => {}).catch(() => {});
+        sb.from('tool_shares').insert([{ tool_id: tool.id, user_id: currentUser.id }]).catch(() => {});
       }
 
-      // 4. Mount Tool
       document.title = tool.title;
       document.getElementById('barTitle').innerText = tool.title;
       document.getElementById('barBadge').innerText = (tool.tool_type || 'App').toUpperCase();
@@ -163,19 +143,18 @@
       const frame = document.getElementById('toolFrame');
       try {
         const res = await fetch(tool.file_url + '?t=' + Date.now());
-        if (!res.ok) throw new Error('File fetch error');
+        if (!res.ok) throw new Error();
         frame.srcdoc = await res.text();
         frame.style.display = 'block';
         document.getElementById('loaderSlot').style.display = 'none';
-
         sb.rpc('increment_tool_view', { tool_slug: targetSlug }).catch(() => {});
       } catch (e) {
-        showError('Tool file load nahi ho saki.');
+        showError('Tool load nahi ho saka.');
       }
     }
 
     function showError(msg) {
-      document.getElementById('loaderSlot').innerHTML = `<p style="color:#ef4444; font-size:0.9rem;">${msg}</p>`;
+      document.getElementById('loaderSlot').innerHTML = `<p style="color:#ef4444; font-size:0.85rem;">${msg}</p>`;
     }
 
     init();
