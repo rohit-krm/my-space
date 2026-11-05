@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Creator Portal — ToolsHub</title>
   
-  <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
-  <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
-  <link href="[https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap](https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap)" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-  <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
-  <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-config.js"></script>
 
   <script>
@@ -34,7 +34,7 @@
 <body class="min-h-screen flex flex-col font-sans antialiased pb-20 sm:pb-0 selection:bg-blue-600 selection:text-white">
 
   <!-- ================= LOGGED OUT VIEW ================= -->
-  <div id="loggedOutView" class="min-h-screen flex flex-col items-center justify-center p-4">
+  <div id="loggedOutView" class="min-h-screen flex flex-col items-center justify-center p-4" style="display:none;">
     <div class="max-w-sm w-full bg-white border border-slate-200 rounded-2xl p-7 text-center shadow-sm">
       <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-4 font-bold shadow-md shadow-blue-500/20">
         <i data-lucide="blocks" class="w-5 h-5"></i>
@@ -43,7 +43,7 @@
       <p class="text-xs text-slate-500 mt-1 leading-relaxed">Apne personal tools manage karne aur run karne ke liye login karein</p>
       
       <button onclick="loginWithGoogle()" class="mt-6 w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 flex items-center justify-center gap-2 shadow-sm transition-all">
-        <svg viewBox="0 0 24 24" class="w-4 h-4">
+        <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0" style="width:16px; height:16px;">
           <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
           <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
           <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.02 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
@@ -59,7 +59,7 @@
   </div>
 
   <!-- ================= AUTHENTICATED WORKSPACE ================= -->
-  <div id="loggedInView" class="flex-1 flex flex-col hidden">
+  <div id="loggedInView" class="flex-1 flex flex-col" style="display:none;">
     
     <!-- Top Header -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
@@ -131,7 +131,6 @@
         </div>
 
         <div class="rounded-2xl border border-slate-200 bg-white shadow-xs p-3 sm:p-5">
-          <!-- Dock: Mobile Swipeable Pill Shelf + Laptop Grid -->
           <div id="dashTabsContainer" class="flex sm:grid sm:grid-cols-3 gap-2 overflow-x-auto no-scrollbar pb-3 sm:pb-4 border-b border-slate-100">
             <div class="py-4 text-xs text-slate-400 font-mono w-full text-center">Loading tools...</div>
           </div>
@@ -178,7 +177,7 @@
               <span class="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs">✨</span>
               <span>Build Your Tool</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Bol kar ya type karke apna micro-tool idea batayein, Gemini AI turant deployable HTML app generate karega</p>
+            <p class="text-xs text-slate-500 mt-0.5">Bol kar ya type karke tool idea batayein, Gemini AI live single-file HTML generate karega</p>
           </div>
 
           <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs mb-4">
@@ -186,13 +185,13 @@
             <div class="relative">
               <textarea id="aiPromptInput" rows="3" placeholder="e.g., Ek GST & Discount Calculator banao jisme base price, discount %, GST slab ka dropdown ho aur real-time total invoice print ho sake..." class="w-full text-xs p-3 rounded-xl border border-slate-200 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 pr-12 resize-none"></textarea>
               
-              <!-- Voice Dictation Button (Web Speech API) -->
+              <!-- Voice Dictation Button -->
               <button onclick="toggleVoiceInput()" id="micBtn" type="button" title="Bol kar batao" class="absolute right-2.5 bottom-3.5 w-8 h-8 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 flex items-center justify-center transition-all">
                 <i data-lucide="mic" class="w-4 h-4" id="micIcon"></i>
               </button>
             </div>
 
-            <!-- Clarification Options (Adaptive Chips) -->
+            <!-- Clarification Options -->
             <div id="aiClarifyBox" class="mt-3 pt-3 border-t border-slate-100">
               <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">⚡ Quick Clarifications / Requirements:</span>
               <div class="flex flex-wrap gap-2 text-xs">
@@ -259,7 +258,7 @@
   </div>
 
   <!-- In-Place Code Editor Modal -->
-  <div id="editorModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-3 sm:p-5">
+  <div id="editorModal" class="fixed inset-0 bg-slate-900/60 z-50 p-3 sm:p-5 flex items-center justify-center" style="display:none;">
     <div class="bg-white rounded-2xl max-w-4xl w-full h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
       <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
         <div>
@@ -281,7 +280,7 @@
   </div>
 
   <!-- In-Place Metadata & Appearance Modal -->
-  <div id="metaEditModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+  <div id="metaEditModal" class="fixed inset-0 bg-slate-900/60 z-50 p-3 sm:p-4 flex items-center justify-center" style="display:none;">
     <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200">
       <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
         <i data-lucide="settings" class="w-4 h-4 text-blue-600"></i>
@@ -737,11 +736,9 @@
 
         generatedAiHtml = data.html;
 
-        // Auto Extract title from prompt
         const cleanTitle = prompt.split(/[,\.\n]/)[0].slice(0, 30).trim() || "Gemini Generated Tool";
         document.getElementById('generatedToolTitle').innerText = cleanTitle;
 
-        // Mount Live in iframe
         const frame = document.getElementById('aiLivePreviewFrame');
         frame.srcdoc = generatedAiHtml;
         document.getElementById('aiResultCard').classList.remove('hidden');
@@ -820,9 +817,9 @@
       document.getElementById('editMetaDesc').value = tool.description || '';
       document.getElementById('editMetaIcon').value = tool.icon || 'wrench';
       document.getElementById('editMetaColor').value = tool.theme_color || 'blue';
-      document.getElementById('metaEditModal').classList.remove('hidden');
+      document.getElementById('metaEditModal').style.display = 'flex';
     }
-    function closeMetaEditor() { document.getElementById('metaEditModal').classList.add('hidden'); }
+    function closeMetaEditor() { document.getElementById('metaEditModal').style.display = 'none'; }
 
     async function saveMetaChanges() {
       if (!editingMetaId) return;
@@ -890,12 +887,12 @@
       currentEditingTool = tool;
       document.getElementById('editorToolTitle').innerText = `Edit: ${tool.title}`;
       document.getElementById('editorFilePath').innerText = tool.slug;
-      document.getElementById('editorModal').classList.remove('hidden');
+      document.getElementById('editorModal').style.display = 'flex';
 
       const res = await fetch(tool.file_url + '?t=' + Date.now());
       document.getElementById('codeEditorArea').value = await res.text();
     }
-    function closeCodeEditor() { document.getElementById('editorModal').classList.add('hidden'); }
+    function closeCodeEditor() { document.getElementById('editorModal').style.display = 'none'; }
 
     async function saveCodeChanges() {
       const newCode = document.getElementById('codeEditorArea').value;
