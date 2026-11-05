@@ -2,6 +2,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/api/:match*", "destination": "/api/:match*" },
     { "source": "/tool/:slug*", "destination": "/tool" },
     { "source": "/user/new", "destination": "/user/new.html" },
     { "source": "/user", "destination": "/user/index.html" },
