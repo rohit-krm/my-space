@@ -9,41 +9,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-
-  <!-- Supabase JS Client & Config -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-config.js"></script>
 
   <script>
     tailwind.config = {
       theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace'],
-          }
-        }
+        extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], mono: ['"JetBrains Mono"', 'monospace'] } }
       }
     }
   </script>
 
   <style>
-    body {
-      background: #fafafc;
-      color: #090d16;
-    }
-    .glow-radial {
-      background: radial-gradient(circle at 50% 15%, rgba(37, 99, 235, 0.08) 0%, transparent 60%);
-    }
-    .tab-active {
-      background-color: #eff6ff !important;
-      border-color: #3b82f6 !important;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
-    }
+    body { background: #fafafc; color: #090d16; }
+    .glow-radial { background: radial-gradient(circle at 50% 15%, rgba(37, 99, 235, 0.08) 0%, transparent 60%); }
+    .tab-active { background-color: #eff6ff !important; border-color: #3b82f6 !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
@@ -59,7 +41,6 @@
       </span>
     </a>
 
-    <!-- Clean Login / Dashboard CTA -->
     <a href="/user" id="navBtn" class="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold bg-slate-950 text-white hover:bg-slate-800 px-4 py-2 rounded-xl transition-all shadow-sm">
       <span>Login</span>
       <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
@@ -97,7 +78,6 @@
     <!-- ================= DYNAMIC TOOL DOCK & RUNNER ================= -->
     <div class="mt-12 w-full rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60 p-4 sm:p-5 text-left">
       
-      <!-- Dock Header -->
       <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3.5">
         <div class="flex items-center gap-2">
           <i data-lucide="pin" class="w-4 h-4 fill-amber-500 text-amber-500"></i>
@@ -106,12 +86,10 @@
         <span class="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-mono">1-tap instant switch</span>
       </div>
 
-      <!-- Tool Tabs Grid -->
       <div id="toolsTabContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
         <div class="p-3 text-xs text-slate-400 font-mono col-span-full text-center">Tools load ho rahe hain...</div>
       </div>
 
-      <!-- Live Inline Sandbox Preview Frame -->
       <div class="mt-5 pt-4 border-t border-slate-100">
         <div class="flex items-center justify-between mb-2.5">
           <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -159,7 +137,7 @@
           <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs mb-3">3</div>
           <h3 class="text-sm font-bold text-slate-900">Pin to Top</h3>
           <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-            Apne top 3 daily utilities ko shelf par pin karein aur 1 click me use karein.
+            Apne top daily utilities ko shelf par pin karein aur 1 click me use karein.
           </p>
         </div>
       </div>
@@ -179,18 +157,27 @@
 
   </main>
 
-  <!-- ================= FOOTER ================= -->
   <footer class="w-full max-w-5xl mx-auto px-5 py-6 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500">
     <span>ToolsHub © 2026</span>
     <a href="/user" class="hover:text-slate-900 font-medium">User Login →</a>
   </footer>
 
-  <!-- ================= CLIENT LOGIC ================= -->
   <script>
     lucide.createIcons();
     let loadedTools = [];
 
-    // Session check
+    function getThemeStyles(colorKey) {
+      const themes = {
+        blue: { bg: 'bg-blue-600', border: 'border-blue-200', soft: 'bg-blue-50/40' },
+        indigo: { bg: 'bg-indigo-600', border: 'border-indigo-200', soft: 'bg-indigo-50/40' },
+        emerald: { bg: 'bg-emerald-600', border: 'border-emerald-200', soft: 'bg-emerald-50/40' },
+        amber: { bg: 'bg-amber-500', border: 'border-amber-200', soft: 'bg-amber-50/40' },
+        rose: { bg: 'bg-rose-600', border: 'border-rose-200', soft: 'bg-rose-50/40' },
+        slate: { bg: 'bg-slate-800', border: 'border-slate-200', soft: 'bg-slate-50/40' }
+      };
+      return themes[colorKey] || themes.blue;
+    }
+
     async function checkSession() {
       try {
         if (typeof sb !== 'undefined' && sb && sb.auth) {
@@ -208,10 +195,7 @@
       }
     }
 
-    // Live Featured Tools fetch & mounting
     async function initShowcase() {
-      const container = document.getElementById('toolsTabContainer');
-      
       try {
         if (typeof sb !== 'undefined' && sb) {
           const { data: tools, error } = await sb
@@ -233,15 +217,15 @@
         console.warn('Supabase fetch notice:', e);
       }
 
-      // Safe Fallback Display
       loadedTools = [
         {
           title: 'QuickBeam Share',
           slug: 'quick-beam',
-          badge: 'P2P',
+          icon: 'zap',
+          theme_color: 'blue',
           description: 'Instant file and message sync',
           file_url: null,
-          inline_html: `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-6 bg-white font-sans text-center flex flex-col items-center justify-center min-h-[220px]"><div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2 font-bold text-lg">⚡</div><h3 class="font-bold text-slate-800 text-sm">ToolsHub Preview</h3><p class="text-xs text-slate-500 mt-1 max-w-xs">Admin console se tools ko "Feature on Home" karein.</p><a href="/user" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-sm">Go to Workspace ↗</a></body></html>`
+          inline_html: `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://cdn.tailwindcss.com"><\/script></head><body class="p-6 bg-white font-sans text-center flex flex-col items-center justify-center min-h-[220px]"><div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2 font-bold text-lg">⚡</div><h3 class="font-bold text-slate-800 text-sm">ToolsHub Preview</h3><p class="text-xs text-slate-500 mt-1 max-w-xs">Admin console se tools feature karein.</p><a href="/user" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-sm">Go to Workspace ↗</a></body></html>`
         }
       ];
       renderTabs(loadedTools);
@@ -250,20 +234,23 @@
 
     function renderTabs(tools) {
       const container = document.getElementById('toolsTabContainer');
-      container.innerHTML = tools.map((t, idx) => `
-        <button id="tool-tab-${idx}" onclick="switchTool(${idx})" class="p-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between text-left transition-all">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-sm">
-              <i data-lucide="${t.icon || (t.tool_type === 'widget' ? 'cpu' : 'zap')}" class="w-4 h-4"></i>
+      container.innerHTML = tools.map((t, idx) => {
+        const theme = getThemeStyles(t.theme_color || 'blue');
+        return `
+          <button id="tool-tab-${idx}" onclick="switchTool(${idx})" class="p-3 rounded-xl border ${theme.border} ${theme.soft} hover:opacity-90 text-left transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg ${theme.bg} text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-sm">
+                <i data-lucide="${t.icon || 'wrench'}" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-slate-900 truncate">${t.title}</div>
+                <div class="text-[10px] text-slate-500 truncate">${t.description || '/tool/' + t.slug}</div>
+              </div>
             </div>
-            <div class="min-w-0">
-              <div class="text-xs font-bold text-slate-900 truncate">${t.title}</div>
-              <div class="text-[10px] text-slate-500 truncate">${t.description || '/tool/' + t.slug}</div>
-            </div>
-          </div>
-          <i data-lucide="pin" class="w-3.5 h-3.5 fill-amber-500 text-amber-500 shrink-0 ml-1"></i>
-        </button>
-      `).join('');
+            <i data-lucide="pin" class="w-3.5 h-3.5 fill-amber-500 text-amber-500 shrink-0 ml-1"></i>
+          </button>
+        `;
+      }).join('');
       lucide.createIcons();
     }
 
